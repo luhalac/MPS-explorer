@@ -4,7 +4,7 @@ Created on Tue Aug 24 16:03:00 2021
 
 @author: Lucia
 
-GUI for MPS analysis 
+GUI for MPS x,y,z data exploration and quick analysis
 
 conda command for converting QtDesigner file to .py:
 pyuic5 -x data_explorer.ui -o data_explorer.py
@@ -58,6 +58,8 @@ class MPS_explorer(QtGui.QMainWindow):
         fileformat_list = ["Picasso hdf5", "ThunderStorm csv", "custom csv"]
         self.fileformat = self.ui.comboBox_fileformat
         self.fileformat.addItems(fileformat_list)
+        self.fileformat.currentIndexChanged.connect(self.emit_param)
+        
         
         self.browsefile = self.ui.pushButton_browsefile
         self.browsefile.clicked.connect(self.select_file)
@@ -96,7 +98,12 @@ class MPS_explorer(QtGui.QMainWindow):
         self.pen3 = pg.mkPen(self.vir[70])
         
         
-    
+    def emit_param(self):
+            
+             
+        self.fileformat1 = int(self.fileformat.currentIndex())
+        
+        
     def select_file(self):
         try:
             root = Tk()
@@ -112,10 +119,10 @@ class MPS_explorer(QtGui.QMainWindow):
         if root.filenamedata == '':
             return
         
-    def import_file(self,filename, fileformat):
+    def import_file(self,filename):
         
         #File Importation
-        if self.fileformat == 0: # Importation procedure for Picasso hdf5 files.
+        if self.fileformat1 == 0: # Importation procedure for Picasso hdf5 files.
             
             # Read H5 file
             f = h5.File(filename, "r")
@@ -128,9 +135,10 @@ class MPS_explorer(QtGui.QMainWindow):
             
             xdata = dataset['x'] 
             ydata = dataset['y'] 
+
         
         
-        elif self.fileformat == 1: # Importation procedure for ThunderSTORM csv files.
+        elif self.fileformat1 == 1: # Importation procedure for ThunderSTORM csv files.
             
             ## Read ThunderSTRORM csv file
             dataset = pd.read_csv(filename)
@@ -142,7 +150,7 @@ class MPS_explorer(QtGui.QMainWindow):
             xdata = dataset[headers[np.where(headers=='x [nm]')]].values.flatten() 
             ydata = dataset[headers[np.where(headers=='y [nm]')]].values.flatten()
             zdata = dataset[headers[np.where(headers=='z [nm]')]].values.flatten()
-            
+            print('file1')
     
             
         else: # Importation procedure for custom csv files.
@@ -159,9 +167,9 @@ class MPS_explorer(QtGui.QMainWindow):
             xdata = dataxyz[:,0]
             ydata = dataxyz[:,1]
             zdata = dataxyz[:,2]
+
             
-            
-            return xdata, ydata, zdata
+        return xdata, ydata, zdata
     
     # def valuechange(self):
         
@@ -171,15 +179,15 @@ class MPS_explorer(QtGui.QMainWindow):
     def scatterplot(self):  
         
         filename = self.ui.lineEdit_filename.text()
-        fileformat = int(self.fileformat.currentIndex())
-        fileformat = self.fileformat
-        xdata, ydata, zdata  = self.import_file(filename, fileformat)
+        print(filename)
+        xdata, ydata, zdata  = self.import_file(filename)
+
 
         self.x = xdata
         self.y = ydata
         self.z = zdata 
 
-        print('0')
+        
         cmapz = cm.get_cmap('viridis', np.size(self.z))
         col = cmapz.colors
         col = np.delete(col, np.s_[3], axis=1)
@@ -193,12 +201,11 @@ class MPS_explorer(QtGui.QMainWindow):
         plotxy.setLabels(bottom=('x [nm]'), left=('y [nm]'))
         plotxy.setAspectLocked(True)
 
-        print('1')
                
-        xy = pg.ScatterPlotItem(self.x, self.y, pen=self.pen1,
-                                brush=None, size=5)
+        xy = pg.ScatterPlotItem(self.x, self.y, pen=None,
+                                brush=self.brush1, size=1)
         
-        print('2')
+      
         plotxy.addItem(xy)
         
             
@@ -210,7 +217,7 @@ class MPS_explorer(QtGui.QMainWindow):
         ROIpos = (int(min(self.x)), int(min(self.y)))
         ROIextent = int(npixels/3)
 
-        print('3')
+
         ROIpen = pg.mkPen(color='b')
         self.roi = pg.ROI(ROIpos, ROIextent, pen = ROIpen)  
         
@@ -220,7 +227,7 @@ class MPS_explorer(QtGui.QMainWindow):
         plotxy.addItem(self.roi)
         
                 
-        print('4')
+
         histzWidget = pg.GraphicsLayoutWidget()
         histabsz = histzWidget.addPlot(title="z Histogram")
         
