@@ -64,10 +64,6 @@ class MPS_explorer(QtGui.QMainWindow):
         self.browsefile = self.ui.pushButton_browsefile
         self.browsefile.clicked.connect(self.select_file)
         
-        # # vertical slider to control point size in scatter
-        # self.slider = self.ui.verticalSlider    
-        # self.slider.valueChanged.connect(self.valuechange)
-        # self.pointsize = 5 
         
         self.buttonxy = self.ui.radioButtonxy
         self.buttonxz = self.ui.radioButtonxz
@@ -150,7 +146,6 @@ class MPS_explorer(QtGui.QMainWindow):
             xdata = dataset[headers[np.where(headers=='x [nm]')]].values.flatten() 
             ydata = dataset[headers[np.where(headers=='y [nm]')]].values.flatten()
             zdata = dataset[headers[np.where(headers=='z [nm]')]].values.flatten()
-            print('file1')
     
             
         else: # Importation procedure for custom csv files.
@@ -160,7 +155,6 @@ class MPS_explorer(QtGui.QMainWindow):
             data = pd.DataFrame(dataset)
             dataxyz = data.values
             dataxyz = dataxyz.astype(float)
-
              
             # data from different columns           
 
@@ -179,7 +173,6 @@ class MPS_explorer(QtGui.QMainWindow):
     def scatterplot(self):  
         
         filename = self.ui.lineEdit_filename.text()
-        print(filename)
         xdata, ydata, zdata  = self.import_file(filename)
 
 
