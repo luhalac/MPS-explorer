@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'data_explorer.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.11.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -71,12 +71,21 @@ class Ui_MainWindow(object):
         self.radioButtonyz = QtWidgets.QRadioButton(self.groupBox_vis)
         self.radioButtonyz.setGeometry(QtCore.QRect(250, 330, 71, 17))
         self.radioButtonyz.setObjectName("radioButtonyz")
-        self.verticalLayoutWidget_3 = QtWidgets.QWidget(self.groupBox_vis)
-        self.verticalLayoutWidget_3.setGeometry(QtCore.QRect(440, 360, 281, 241))
-        self.verticalLayoutWidget_3.setObjectName("verticalLayoutWidget_3")
-        self.zhistlayout_2 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_3)
-        self.zhistlayout_2.setContentsMargins(0, 0, 0, 0)
-        self.zhistlayout_2.setObjectName("zhistlayout_2")
+        self.pushButton = QtWidgets.QPushButton(self.groupBox_vis)
+        self.pushButton.setGeometry(QtCore.QRect(610, 302, 81, 31))
+        self.pushButton.setObjectName("pushButton")
+        self.lineEdit_zmin = QtWidgets.QLineEdit(self.groupBox_vis)
+        self.lineEdit_zmin.setGeometry(QtCore.QRect(460, 310, 61, 20))
+        self.lineEdit_zmin.setObjectName("lineEdit_zmin")
+        self.lineEdit_zmax = QtWidgets.QLineEdit(self.groupBox_vis)
+        self.lineEdit_zmax.setGeometry(QtCore.QRect(540, 310, 61, 20))
+        self.lineEdit_zmax.setObjectName("lineEdit_zmax")
+        self.label = QtWidgets.QLabel(self.groupBox_vis)
+        self.label.setGeometry(QtCore.QRect(460, 290, 47, 13))
+        self.label.setObjectName("label")
+        self.label_zmax = QtWidgets.QLabel(self.groupBox_vis)
+        self.label_zmax.setGeometry(QtCore.QRect(540, 290, 47, 13))
+        self.label_zmax.setObjectName("label_zmax")
         self.pushButton_scatter = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_scatter.setGeometry(QtCore.QRect(470, 50, 61, 31))
         self.pushButton_scatter.setObjectName("pushButton_scatter")
@@ -105,6 +114,9 @@ class Ui_MainWindow(object):
         self.pushButton_smallROI.setText(_translate("MainWindow", "Set Small ROI"))
         self.radioButtonxy.setText(_translate("MainWindow", "Plot (x,y)"))
         self.radioButtonyz.setText(_translate("MainWindow", "Plot (y,z)"))
+        self.pushButton.setText(_translate("MainWindow", "select Z range"))
+        self.label.setText(_translate("MainWindow", "Z min"))
+        self.label_zmax.setText(_translate("MainWindow", "Z max"))
         self.pushButton_scatter.setText(_translate("MainWindow", "Scatter"))
 
 

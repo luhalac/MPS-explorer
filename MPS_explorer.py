@@ -283,18 +283,7 @@ class MPS_explorer(QtGui.QMainWindow):
         self.ui.scatterlayout_3.addWidget(scatterWidgetROI)    
         
         
-        histzWidget2 = pg.GraphicsLayoutWidget()
-        histabsz2 = histzWidget2.addPlot(title="z ROI Histogram")
-        
-        histz2, bin_edgesz2 = np.histogram(zroi, bins='auto')
-        widthzabs2 = np.mean(np.diff(bin_edgesz2))
-        bincentersz2 = np.mean(np.vstack([bin_edgesz2[0:-1],bin_edgesz2[1:]]), axis=0)
-        bargraphz2 = pg.BarGraphItem(x = bincentersz2, height = histz2, 
-                                    width = widthzabs2, brush = self.brush1, pen = None)
-        histabsz2.addItem(bargraphz2)
-                
-        self.empty_layout(self.ui.zhistlayout_2)
-        self.ui.zhistlayout_2.addWidget(histzWidget2)
+
   
         
     def empty_layout(self, layout):
