@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1217</width>
+    <width>1548</width>
     <height>854</height>
    </rect>
   </property>
@@ -106,8 +106,8 @@
      <rect>
       <x>10</x>
       <y>120</y>
-      <width>731</width>
-      <height>611</height>
+      <width>711</width>
+      <height>621</height>
      </rect>
     </property>
     <property name="title">
@@ -127,10 +127,10 @@
     <widget class="QWidget" name="verticalLayoutWidget_2">
      <property name="geometry">
       <rect>
-       <x>480</x>
+       <x>440</x>
        <y>30</y>
-       <width>241</width>
-       <height>221</height>
+       <width>251</width>
+       <height>251</height>
       </rect>
      </property>
      <layout class="QVBoxLayout" name="zhistlayout"/>
@@ -198,10 +198,10 @@
       <string>Plot (y,z)</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="pushButton">
+    <widget class="QPushButton" name="pushButton_zrange">
      <property name="geometry">
       <rect>
-       <x>610</x>
+       <x>600</x>
        <y>302</y>
        <width>81</width>
        <height>31</height>
@@ -214,17 +214,20 @@
     <widget class="QLineEdit" name="lineEdit_zmin">
      <property name="geometry">
       <rect>
-       <x>460</x>
+       <x>450</x>
        <y>310</y>
        <width>61</width>
        <height>20</height>
       </rect>
      </property>
+     <property name="clearButtonEnabled">
+      <bool>false</bool>
+     </property>
     </widget>
     <widget class="QLineEdit" name="lineEdit_zmax">
      <property name="geometry">
       <rect>
-       <x>540</x>
+       <x>530</x>
        <y>310</y>
        <width>61</width>
        <height>20</height>
@@ -234,7 +237,7 @@
     <widget class="QLabel" name="label">
      <property name="geometry">
       <rect>
-       <x>460</x>
+       <x>450</x>
        <y>290</y>
        <width>47</width>
        <height>13</height>
@@ -247,7 +250,7 @@
     <widget class="QLabel" name="label_zmax">
      <property name="geometry">
       <rect>
-       <x>540</x>
+       <x>530</x>
        <y>290</y>
        <width>47</width>
        <height>13</height>
@@ -256,6 +259,17 @@
      <property name="text">
       <string>Z max</string>
      </property>
+    </widget>
+    <widget class="QWidget" name="verticalLayoutWidget_3">
+     <property name="geometry">
+      <rect>
+       <x>440</x>
+       <y>380</y>
+       <width>241</width>
+       <height>221</height>
+      </rect>
+     </property>
+     <layout class="QVBoxLayout" name="zhistlayout_2"/>
     </widget>
    </widget>
    <widget class="QPushButton" name="pushButton_scatter">
@@ -271,13 +285,172 @@
      <string>Scatter</string>
     </property>
    </widget>
+   <widget class="QGroupBox" name="groupBox">
+    <property name="geometry">
+     <rect>
+      <x>740</x>
+      <y>40</y>
+      <width>761</width>
+      <height>701</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Clustering (DBSCAN)</string>
+    </property>
+    <widget class="QWidget" name="verticalLayoutWidget_9">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>90</y>
+       <width>381</width>
+       <height>241</height>
+      </rect>
+     </property>
+     <layout class="QVBoxLayout" name="scatterlayout_dbscan"/>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_eps">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>50</y>
+       <width>61</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>30</string>
+     </property>
+     <property name="clearButtonEnabled">
+      <bool>false</bool>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_minsamples">
+     <property name="geometry">
+      <rect>
+       <x>110</x>
+       <y>50</y>
+       <width>61</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>10</string>
+     </property>
+     <property name="clearButtonEnabled">
+      <bool>false</bool>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButton_DBSCAN">
+     <property name="geometry">
+      <rect>
+       <x>220</x>
+       <y>40</y>
+       <width>81</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>cluster</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_eps">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>30</y>
+       <width>47</width>
+       <height>13</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>EPS</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_minsamples">
+     <property name="geometry">
+      <rect>
+       <x>110</x>
+       <y>30</y>
+       <width>61</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>min samples</string>
+     </property>
+    </widget>
+    <widget class="QWidget" name="verticalLayoutWidget_10">
+     <property name="geometry">
+      <rect>
+       <x>400</x>
+       <y>90</y>
+       <width>331</width>
+       <height>241</height>
+      </rect>
+     </property>
+     <layout class="QVBoxLayout" name="scatterlayout_cmdbscan"/>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_Nneighbor">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>390</y>
+       <width>61</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>1</string>
+     </property>
+     <property name="clearButtonEnabled">
+      <bool>false</bool>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_eps_2">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>370</y>
+       <width>61</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>N neighbor</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButton_Distances">
+     <property name="geometry">
+      <rect>
+       <x>220</x>
+       <y>380</y>
+       <width>81</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Distances</string>
+     </property>
+    </widget>
+    <widget class="QWidget" name="verticalLayoutWidget_11">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>440</y>
+       <width>331</width>
+       <height>241</height>
+      </rect>
+     </property>
+     <layout class="QVBoxLayout" name="scatterlayout_histcmdist"/>
+    </widget>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1217</width>
+     <width>1548</width>
      <height>21</height>
     </rect>
    </property>
