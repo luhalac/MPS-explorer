@@ -27,6 +27,7 @@ from sklearn.neighbors import KDTree, NearestNeighbors
 import scipy as sp
 from scipy import interpolate
 import tools.utils as utils
+import hdbscan
 
 
 import pyqtgraph as pg
@@ -120,7 +121,7 @@ class MPS_explorer(QtGui.QMainWindow):
        
         self.brush1 = pg.mkBrush("#B22222")
         self.brush2 = pg.mkBrush("#228B22")
-        self.brush3 = pg.mkBrush(self.vir[70])
+        self.brush3 = pg.mkBrush("#6e1212")
         
         self.pen1 = pg.mkPen("#B22222")
         self.pen2 = pg.mkPen("#228B22")
@@ -522,7 +523,10 @@ class MPS_explorer(QtGui.QMainWindow):
         eps = int(self.eps)
 
         # DBSCAN without previous filtering
-        db = DBSCAN(eps = eps, min_samples = min_samples).fit(XYZ) 
+        # db = DBSCAN(eps = eps, min_samples = min_samples).fit(XYZ) 
+        # dblabels = db.labels_
+        
+        db = hdbscan.HDBSCAN(min_cluster_size=min_samples, gen_min_span_tree=True).fit(XYZ)
         dblabels = db.labels_
         
         cm_list = [] 
@@ -552,8 +556,8 @@ class MPS_explorer(QtGui.QMainWindow):
         plotclusters.setAspectLocked(True)
 
         self.selecteddata = pg.ScatterPlotItem(XYZ[:,0], XYZ[:,1], size=2, brush = self.brush1)  
-        self.selectedcluscm = pg.ScatterPlotItem(self.cms[:,0], self.cms[:,1], size=10)  
-        self.selectedclus = pg.ScatterPlotItem(Xc[:,0], Xc[:,1], pen=[pg.mkPen(v) for v in col],brush=pg.mkBrush(None), size=10) 
+        self.selectedcluscm = pg.ScatterPlotItem(self.cms[:,0], self.cms[:,1], size=10, brush = self.brush3)  
+        self.selectedclus = pg.ScatterPlotItem(Xc[:,0], Xc[:,1], pen=self.pen1,brush=pg.mkBrush(None), size=10) 
         
         plotclusters.setLabels(bottom=('x [nm]'), left=('y [nm]'))
         plotclusters.setXRange(np.min(self.xroi), np.max(self.xroi), padding=0)
@@ -592,7 +596,7 @@ class MPS_explorer(QtGui.QMainWindow):
         Nneighbor = int(self.Nneighbor)
 
         tree = KDTree(self.cms)
-        distances, indexes = tree.query(self.cmsc, Nneighbor+1) 
+        distances, indexes = tree.query(self.cms, Nneighbor+1) 
         distances = distances[:,1:] # exclude distance to the same molecule; distances has N rows (#clusters) and M columns (# neighbors)
         indexes = indexes[:,1:]    
         
@@ -600,7 +604,7 @@ class MPS_explorer(QtGui.QMainWindow):
         plotdistcmd = scatterWidgetDBSCAN_cmdist.addPlot(title="Clusters centers and distances")
         plotdistcmd.setAspectLocked(True)
 
-        self.selectedcluscmd = pg.ScatterPlotItem(self.cms[:,0], self.cms[:,1], size=10)  
+        self.selectedcluscmd = pg.ScatterPlotItem(self.cms[:,0], self.cms[:,1], size=10, brush = self.brush3)  
         plotdistcmd.setLabels(bottom=('x [nm]'), left=('y [nm]'))
         plotdistcmd.setXRange(np.min(self.xroi), np.max(self.xroi), padding=0)
         
