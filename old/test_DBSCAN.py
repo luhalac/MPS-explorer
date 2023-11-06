@@ -14,11 +14,15 @@ from sklearn.neighbors import KDTree
 import scipy as sp
 import matplotlib.pyplot as plt
 from sklearn.neighbors import NearestNeighbors
+from scipy import interpolate
+import hdbscan
+
+
 
 os.chdir(r'\\Fileserver\na\Alan Szalai\MPS analysis - septiembre 2023\data ejemplo')
 
 # Define filename
-filename = "ROI6_spectrin_locs_drift_corrected_apicked_1.hdf5"
+filename = "ROI6_spectrin_locs_drift_corrected_apicked_3.hdf5"
 
 # Read H5 file
 f = h5.File(filename, "r")
@@ -42,6 +46,7 @@ ydata = ydata * pxsize
 
 X = np.column_stack((xdata,ydata,zdata))
 
+
 #Determine the optimal value of epsilon for the DBSCAN
 
    
@@ -51,9 +56,12 @@ X = np.column_stack((xdata,ydata,zdata))
 # k_distances = np.sort(distances[:, -1])
 # epsest = k_distances[-1]
 
-
-db = DBSCAN(eps=50, min_samples=10).fit(X)
+db = hdbscan.HDBSCAN(min_cluster_size=5, gen_min_span_tree=True).fit(X)
 dblabels = db.labels_
+
+
+# db = DBSCAN(eps=50, min_samples=20).fit(X)
+# dblabels = db.labels_
 
 cm_list = [] 
    
@@ -79,12 +87,14 @@ col = 255*col
 
 # Generate scatter plot 
 plt.figure()
-plt.scatter(Xc[:,0], Xc[:,1], c = labels, marker="o", alpha = 0.5)
-# plt.scatter(X[:,0], X[:,1], c='gray', s=1)
+plt.scatter(X[:,0], X[:,1], c='gray', s=1, alpha = 0.5)
+plt.figure()
+plt.scatter(Xc[:,0], Xc[:,1], c = labels, marker="+", alpha = 0.5)
+
 
 cm = np.array(cm_list)
     
-X = 10 #study distances until Xth neighbor, 
+X = 3 #study distances until Xth neighbor, 
 tree = KDTree(cm)
 distances, indexes = tree.query(cm, X+1) 
 distances = distances[:,1:] # exclude distance to the same molecule; distances has N rows (#clusters) and M columns (# neighbors)
@@ -107,3 +117,5 @@ plt.hist(distances, bins=50)
 
 # plt.hist(distances)
 
+
+   
