@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1548</width>
-    <height>1195</height>
+    <height>903</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -609,11 +609,11 @@
      </property>
      <layout class="QVBoxLayout" name="scatterlayout_goodclus"/>
     </widget>
-    <widget class="QPushButton" name="pushButton_savedistdata">
+    <widget class="QPushButton" name="pushButton_savexyzROI_3">
      <property name="geometry">
       <rect>
-       <x>220</x>
-       <y>380</y>
+       <x>610</x>
+       <y>410</y>
        <width>101</width>
        <height>31</height>
       </rect>
@@ -622,11 +622,11 @@
       <string>save dist data</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="pushButton_savecluscenters">
+    <widget class="QPushButton" name="pushButton_savexyzROI_4">
      <property name="geometry">
       <rect>
-       <x>540</x>
-       <y>40</y>
+       <x>220</x>
+       <y>380</y>
        <width>121</width>
        <height>31</height>
       </rect>

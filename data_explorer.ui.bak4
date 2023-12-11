@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1548</width>
-    <height>1195</height>
+    <height>903</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -391,7 +391,7 @@
     <property name="geometry">
      <rect>
       <x>740</x>
-      <y>130</y>
+      <y>40</y>
       <width>761</width>
       <height>701</height>
      </rect>
@@ -497,8 +497,8 @@
     <widget class="QWidget" name="verticalLayoutWidget_11">
      <property name="geometry">
       <rect>
-       <x>410</x>
-       <y>90</y>
+       <x>30</x>
+       <y>440</y>
        <width>331</width>
        <height>241</height>
       </rect>
@@ -510,7 +510,7 @@
       <rect>
        <x>420</x>
        <y>460</y>
-       <width>301</width>
+       <width>241</width>
        <height>221</height>
       </rect>
      </property>
@@ -521,7 +521,7 @@
       <rect>
        <x>420</x>
        <y>380</y>
-       <width>181</width>
+       <width>221</width>
        <height>71</height>
       </rect>
      </property>
@@ -585,7 +585,7 @@
       </property>
      </widget>
     </widget>
-    <widget class="QPushButton" name="pushButton_remove_bad_cluster">
+    <widget class="QPushButton" name="pushButton_DBSCAN_2">
      <property name="geometry">
       <rect>
        <x>410</x>
@@ -596,43 +596,6 @@
      </property>
      <property name="text">
       <string>remove bad cluster</string>
-     </property>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_12">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>440</y>
-       <width>331</width>
-       <height>241</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="scatterlayout_goodclus"/>
-    </widget>
-    <widget class="QPushButton" name="pushButton_savedistdata">
-     <property name="geometry">
-      <rect>
-       <x>220</x>
-       <y>380</y>
-       <width>101</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>save dist data</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="pushButton_savecluscenters">
-     <property name="geometry">
-      <rect>
-       <x>540</x>
-       <y>40</y>
-       <width>121</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>save clusters centers</string>
      </property>
     </widget>
    </widget>

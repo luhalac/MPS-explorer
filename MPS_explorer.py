@@ -20,12 +20,9 @@ import h5py as h5
 import pandas as pd
 from tkinter import Tk, filedialog
 import numpy as np
-import numpy as np
 from sklearn.cluster import DBSCAN
 from sklearn.neighbors import KDTree
 from sklearn.neighbors import KDTree, NearestNeighbors
-import scipy as sp
-from scipy import interpolate
 import tools.utils as utils
 import hdbscan
 
@@ -100,32 +97,58 @@ class MPS_explorer(QtGui.QMainWindow):
         self.pushButton_savexyzROI = self.ui.pushButton_savexyzROI
         self.pushButton_savexyzROI.clicked.connect(self.savexyzROI)
         
+        self.pushButton_savexyzROI_2 = self.ui.pushButton_savexyzROI_2
+        self.pushButton_savexyzROI_2.clicked.connect(self.savexyzROI2)
+        
+        # save Nneighbor distance data
+        
+        self.pushButton_savedistdata = self.ui.pushButton_savedistdata
+        self.pushButton_savedistdata.clicked.connect(self.savedistdata)
+        
         # perform clustering analysis (DBSCAN)
                 
         self.pushButton_DBSCAN = self.ui.pushButton_DBSCAN
         self.pushButton_DBSCAN.clicked.connect(self.cluster_DBSCAN)
         
+        # remove bad clusters
+                
+        self.pushButton_badclus = self.ui.pushButton_remove_bad_cluster
+        self.pushButton_badclus.clicked.connect(self.dist_cm_good_clus)
+        
+        # save clus CM xy data
+        
+        self.pushButton_CMclus = self.ui.pushButton_savecluscenters
+        self.pushButton_CMclus.clicked.connect(self.save_clus_CM)
+        
         # calculate distances between cluster centers
                 
         self.pushButton_Distances = self.ui.pushButton_Distances
-        self.pushButton_Distances.clicked.connect(self.dist_cmDBSCAN)
+        self.pushButton_Distances.clicked.connect(self.KNdist_hist)
         
-        # define colormap
         
-        cmap = cm.get_cmap('viridis', 100)
-        colors = cmap.colors
-        colors = np.delete(colors, np.s_[3], axis=1)
-        col = 255*colors
-        self.vir = col.astype(int)
+        # lateral range and binning for fine tunning rel z hist
+        self.latmin = self.ui.lineEdit_latmin
+        self.latmax = self.ui.lineEdit_latmax
+        self.nbins = self.ui.lineEdit_bin
         
-       
-        self.brush1 = pg.mkBrush("#B22222")
-        self.brush2 = pg.mkBrush("#228B22")
-        self.brush3 = pg.mkBrush("#6e1212")
+        self.latmin.textChanged.connect(self.latchange)
+        self.latmax.textChanged.connect(self.latchange)
+        self.nbins.textChanged.connect(self.latchange)
         
-        self.pen1 = pg.mkPen("#B22222")
-        self.pen2 = pg.mkPen("#228B22")
-        self.pen3 = pg.mkPen("#B22222")
+        self.lmin = None
+        self.lmax = None
+        self.bins = None
+        
+                
+        # define colors (color blind palette)
+              
+        self.brush1 = pg.mkBrush("#d55e00")
+        self.brush2 = pg.mkBrush("#009e73")
+        self.brush3 = pg.mkBrush("#0072b2")
+        
+        self.pen1 = pg.mkPen("#d55e00")
+        self.pen2 = pg.mkPen("#009e73")
+        self.pen3 = pg.mkPen("#0072b2")
     
         
         
@@ -171,9 +194,6 @@ class MPS_explorer(QtGui.QMainWindow):
             dataset = f['locs']
         
             # Load  input HDF5 file
-            frame = dataset['frame']
-            photon_raw = dataset['photons']
-            bg = dataset['bg']          
             
             xdata = dataset['x'] 
             ydata = dataset['y'] 
@@ -187,15 +207,15 @@ class MPS_explorer(QtGui.QMainWindow):
             ydata = ydata * self.pxsize
             
             
+            
         elif self.fileformat1 == 1: # Importation procedure for ThunderSTORM csv files.
             
             ## Read ThunderSTRORM csv file
-            dataset = pd.read_csv(filename)
+            dataset = pd.read_csv(filename1)
             # Extraxt headers names
             headers = dataset.columns.values
             
             # data from different columns           
-            frame = dataset[headers[np.where(headers=='frame')]].values.flatten()
             xdata = dataset[headers[np.where(headers=='x [nm]')]].values.flatten() 
             ydata = dataset[headers[np.where(headers=='y [nm]')]].values.flatten()
             zdata = dataset[headers[np.where(headers=='z [nm]')]].values.flatten()
@@ -204,7 +224,7 @@ class MPS_explorer(QtGui.QMainWindow):
         else: # Importation procedure for custom csv files.
 
             # Read custom csv file
-            dataset = pd.read_csv(filename)
+            dataset = pd.read_csv(filename1)
             data = pd.DataFrame(dataset)
             dataxyz = data.values
             dataxyz = dataxyz.astype(float)
@@ -233,20 +253,17 @@ class MPS_explorer(QtGui.QMainWindow):
             dataset = f['locs']
         
             # Load  input HDF5 file
-            frame = dataset['frame']
-            photon_raw = dataset['photons']
-            bg = dataset['bg']          
             
-            xdata = dataset['x'] 
-            ydata = dataset['y'] 
+            xdata2 = dataset['x'] 
+            ydata2 = dataset['y'] 
             zdata2 = dataset['z'] 
             
             # define px size in nm
             self.pxsize = 133
             
             # Convert x,y values from 'camera subpixels' to nanometres
-            xdata2 = xdata * self.pxsize
-            ydata2 = ydata * self.pxsize
+            xdata2 = xdata2 * self.pxsize
+            ydata2 = ydata2 * self.pxsize
             
 
         
@@ -254,30 +271,29 @@ class MPS_explorer(QtGui.QMainWindow):
         elif self.fileformat2 == 1: # Importation procedure for ThunderSTORM csv files.
             
             ## Read ThunderSTRORM csv file
-            dataset = pd.read_csv(filename)
+            dataset = pd.read_csv(filename2)
             # Extraxt headers names
             headers = dataset.columns.values
             
             # data from different columns           
-            frame = dataset[headers[np.where(headers=='frame')]].values.flatten()
-            xdata = dataset[headers[np.where(headers=='x [nm]')]].values.flatten() 
-            ydata = dataset[headers[np.where(headers=='y [nm]')]].values.flatten()
-            zdata = dataset[headers[np.where(headers=='z [nm]')]].values.flatten()
+            xdata2 = dataset[headers[np.where(headers=='x [nm]')]].values.flatten() 
+            ydata2 = dataset[headers[np.where(headers=='y [nm]')]].values.flatten()
+            zdata2 = dataset[headers[np.where(headers=='z [nm]')]].values.flatten()
     
             
         else: # Importation procedure for custom csv files.
 
             # Read custom csv file
-            dataset = pd.read_csv(filename)
+            dataset = pd.read_csv(filename2)
             data = pd.DataFrame(dataset)
             dataxyz = data.values
             dataxyz = dataxyz.astype(float)
              
             # data from different columns           
 
-            xdata = dataxyz[:,0]
-            ydata = dataxyz[:,1]
-            zdata = dataxyz[:,2]
+            xdata2 = dataxyz[:,0]
+            ydata2 = dataxyz[:,1]
+            zdata2 = dataxyz[:,2]
 
             
         return xdata2, ydata2, zdata2
@@ -288,9 +304,7 @@ class MPS_explorer(QtGui.QMainWindow):
         # Scatter plot data Ch1
         filename1 = self.ui.lineEdit_filename.text()
         xdata, ydata, zdata  = self.import_file_ch1(filename1)
-        print(filename1)
  
-
         self.x = xdata
         self.y = ydata
         self.z = zdata 
@@ -307,7 +321,6 @@ class MPS_explorer(QtGui.QMainWindow):
         plotxy.setLabels(bottom=('x [nm]'), left=('y [nm]'))
         plotxy.setAspectLocked(True)
       
-
                
         xy = pg.ScatterPlotItem(self.x, self.y, pen=None,
                                 brush=self.brush1, size=1)
@@ -354,10 +367,9 @@ class MPS_explorer(QtGui.QMainWindow):
         # Scatter plot data Ch2
 
         filename2 = self.ui.lineEdit_filename_2.text()
-        print(filename2)
         
         if filename2 == '':
-            print('filename2')
+            
             
             pass
         
@@ -397,7 +409,8 @@ class MPS_explorer(QtGui.QMainWindow):
     
     def updateROIPlot(self):
         
-                
+        filename2 = self.ui.lineEdit_filename_2.text()
+                        
         scatterWidgetROI = pg.GraphicsLayoutWidget()
         plotROI = scatterWidgetROI.addPlot(title="Scatter plot ROI selected Ch 1")
         plotROI.setAspectLocked(True)
@@ -415,6 +428,22 @@ class MPS_explorer(QtGui.QMainWindow):
         
         self.xroi = self.x[index]
         self.yroi = self.y[index]
+        
+        if filename2 == '':
+            
+            pass
+        
+        else :
+            indx2 = np.where((self.x2>xmin) & (self.x2<xmax))
+            indy2 = np.where((self.y2>ymin) & (self.y2<ymax))
+            
+            mask2 = np.in1d(indx2, indy2)
+            
+            ind2 = np.nonzero(mask2)
+            index2=indx2[0][ind2[0]]
+            
+            self.xroi2 = self.x2[index2]
+            self.yroi2 = self.y2[index2]
         
         zmin = self.ui.lineEdit_zmin.text()
         zmax = self.ui.lineEdit_zmax.text()
@@ -435,14 +464,27 @@ class MPS_explorer(QtGui.QMainWindow):
         if self.zmax == None: 
             
             self.zroi = self.z[index]
+            
 
         else:
             zroi = self.z[index]
             indz = np.where((zroi>self.zmin) & (zroi<self.zmax))
-            
             self.zroi = zroi[indz]
             self.xroi = self.xroi[indz]
             self.yroi = self.yroi[indz]
+            
+            if filename2 == '':
+            
+                pass
+        
+            else :
+                self.zroi2 = self.z2[index2]
+            
+                zroi2 = self.z2[index2]
+                indz2 = np.where((zroi2>self.zmin) & (zroi2<self.zmax))
+                self.zroi2 = zroi2[indz2]
+                self.xroi2 = self.xroi2[indz2]
+                self.yroi2 = self.yroi2[indz2]
             
         
         
@@ -453,16 +495,16 @@ class MPS_explorer(QtGui.QMainWindow):
             plotROI.setXRange(np.min(self.xroi), np.max(self.xroi), padding=0)
             
         if self.buttonxz.isChecked():
-            self.selected = pg.ScatterPlotItem(self.zroi, self.xroi, pen=self.pen2,
+            self.selected = pg.ScatterPlotItem(self.xroi, self.zroi, pen=self.pen1,
                                                brush = None, size = 5)
-            plotROI.setLabels(bottom=('z [nm]'), left=('x [nm]'))
-            plotROI.setXRange(np.min(self.zroi), np.max(self.zroi), padding=0)
+            plotROI.setLabels(bottom=('x [nm]'), left=('z [nm]'))
+            plotROI.setXRange(np.min(self.xroi), np.max(self.xroi), padding=0)
             
         if self.buttonyz.isChecked():
-            self.selected = pg.ScatterPlotItem(self.zroi, self.xroi, pen=self.pen3,
+            self.selected = pg.ScatterPlotItem(self.yroi, self.zroi, pen=self.pen1,
                                                brush = None, size = 5)
-            plotROI.setLabels(bottom=('z [nm]'), left=('x [nm]'))
-            plotROI.setXRange(np.min(self.zroi), np.max(self.zroi), padding=0)
+            plotROI.setLabels(bottom=('y [nm]'), left=('z [nm]'))
+            plotROI.setXRange(np.min(self.yroi), np.max(self.yroi), padding=0)
         
         else:
             pass
@@ -493,37 +535,69 @@ class MPS_explorer(QtGui.QMainWindow):
     def savexyzROI(self):
         
         xyzROI = np.array([self.xroi,self.yroi,self.zroi])
+        xyzROI = np.transpose(xyzROI)
         
         filename = self.ui.lineEdit_filename.text()
-    
         filename = os.path.splitext(filename)[0]
-        dataName = utils.insertSuffix(filename, '_xyzROI.hdf5')
-        print(dataName)
+        dataNamecsv = utils.insertSuffix(filename, '_xyzROICh1.csv')
         
-        hf = h5.File(dataName, 'w')
-        hf['dataset'] = xyzROI
-        hf['dataset'].attrs['column_names'] = ['x','y','z'] 
-        # hf.create_dataset('dataset_1', data=xyzROI)
-        hf.close()
+        #export array to CSV file (using 2 decimal places)
+        np.savetxt(dataNamecsv, xyzROI, delimiter=",", fmt="%.2f",header="x, y, z", comments="")
+
+        
+        
+    def savexyzROI2(self):
+    
+        xyzROI2 = np.array([self.xroi2,self.yroi2,self.zroi2])
+        xyzROI2 = np.transpose(xyzROI2)
+        
+        filename2 = self.ui.lineEdit_filename_2.text()
+        filename2 = os.path.splitext(filename2)[0]
+        dataNamecsv = utils.insertSuffix(filename2, '_xyzROICh2.csv')
+
+        
+        #export array to CSV file (using 2 decimal places)
+        np.savetxt(dataNamecsv, xyzROI2, delimiter=",", fmt="%.2f",header="x, y, z", comments="")
+        
+    
+    def savedistdata(self):
+        
+        Nneighbor = int(self.Nneighbor)
+
+        dist = self.distances
+        
+        filename = self.ui.lineEdit_filename.text()
+        filename = os.path.splitext(filename)[0]
+        dataNamecsv = utils.insertSuffix(filename, '_' + str(Nneighbor) + 'neighbor_distdata.csv')
+        
+        #export dist array to CSV file (using 2 decimal places)
+        np.savetxt(dataNamecsv, dist, delimiter=",", fmt="%.2f")
 
     def cluster_DBSCAN(self):
         
         
         self.badclusterslist = []
+        self.indbc = []
 
         
         # locs in ROI
-        XYZ = np.column_stack((self.xroi, self.yroi, self.zroi))
+        # XYZ = np.column_stack((self.xroi, self.yroi, self.zroi))
+        
+        # XY locs in ROI
+        XYZ = np.column_stack((self.xroi, self.yroi))
                
         # DBSCAN parameters
-        self.eps = float(self.ui.lineEdit_eps.text())
+        # self.eps = float(self.ui.lineEdit_eps.text())
+        # eps = int(self.eps)
+        
+        
         self.minsamples = float(self.ui.lineEdit_minsamples.text())
         
         min_samples = int(self.minsamples)
-        eps = int(self.eps)
+        
 
         # DBSCAN without previous filtering
-        # db = DBSCAN(eps = eps, min_samples = min_samples).fit(XYZ) 
+        # db = DBSCAN(eps = 30, min_samples = min_samples).fit(XYZ) 
         # dblabels = db.labels_
         
         db = hdbscan.HDBSCAN(min_cluster_size=min_samples, gen_min_span_tree=True).fit(XYZ)
@@ -535,22 +609,18 @@ class MPS_explorer(QtGui.QMainWindow):
             idx = np.where(dblabels==i)
             x_i = self.xroi[idx]
             y_i = self.yroi[idx]
-            z_i = self.zroi[idx]
-            cm_list.append(np.array([np.mean(x_i),np.mean(y_i),np.mean(z_i)]))
-            
+            # z_i = self.zroi[idx]
+            cm_list.append(np.array([np.mean(x_i),np.mean(y_i)]))
+        
+   
         range_max = len(XYZ)
         Xc = np.array([XYZ[i] for i in range(0, range_max) if dblabels[i] != -1])
         labels = np.array([dblabels[i] for i in range(0, range_max) if dblabels[i] != -1])
         
-        cmapz = cm.get_cmap('viridis', np.size(labels))
-        col = cmapz.colors
-        col = np.delete(col, np.s_[3], axis=1)
-        col = 255*col
-        
         self.cms = np.array(cm_list)
-        
-        
-            
+        self.cms = np.around(self.cms, decimals=2)
+
+ 
         scatterWidgetDBSCAN = pg.GraphicsLayoutWidget()
         plotclusters = scatterWidgetDBSCAN.addPlot(title="Clustered data with DBSCAN")
         plotclusters.setAspectLocked(True)
@@ -569,36 +639,119 @@ class MPS_explorer(QtGui.QMainWindow):
         self.empty_layout(self.ui.scatterlayout_dbscan)
         self.ui.scatterlayout_dbscan.addWidget(scatterWidgetDBSCAN) 
         
+        scatterWidgetDBSCAN_cmdist = pg.GraphicsLayoutWidget()
+        plotdistcmd = scatterWidgetDBSCAN_cmdist.addPlot(title="Clusters centers and distances")
+        plotdistcmd.setAspectLocked(True)
+
+        self.selectedcluscmd = pg.ScatterPlotItem(self.cms[:,0], self.cms[:,1], size=10, brush = self.brush3)  
+        plotdistcmd.setLabels(bottom=('x [nm]'), left=('y [nm]'))
+        plotdistcmd.setXRange(np.min(self.xroi), np.max(self.xroi), padding=0)
+        self.selectedcluscmd.sigClicked.connect(self.rx)
+        
+        plotdistcmd.addItem(self.selectedcluscmd)
+        
+        self.empty_layout(self.ui.scatterlayout_histcmdist)
+        self.ui.scatterlayout_histcmdist.addWidget(scatterWidgetDBSCAN_cmdist) 
+     
 
  
-    def rx(self, obj, rx):
-        
-        badclus = (points[0].pos())
-        badcluscoord = [(points[0].pos()[0], points[0].pos()[1])]
-        print(badcluscoord)
-        
-        
-        self.badclusterslist.append(badcluscoord)
-        
-        s = []
-        for i in self.badclusterslist:
-           if i not in s:
-               s.append(i)
+    def rx(self, obj, points):
 
-        self.clusters = s
+        # badclus = (points[0].pos())
+        badcluscoord = np.array((np.round(points[0].pos()[0], decimals = 2), np.round(points[0].pos()[1], decimals = 2)))
+
+        indbad_clus = np.where((self.cms[:,0] == badcluscoord[0]) & (self.cms[:,1] == badcluscoord[1]))
+
+        self.indbc.append(indbad_clus)
+        badind = np.unique(self.indbc)
+        
+        self.good_cms = [elem for i, elem in enumerate(self.cms) if i not in badind]
+        self.gcms = np.array(self.good_cms)
+
+        
+    
+    def dist_cm_good_clus(self):
+        
+        scatterWidgetgoodclus = pg.GraphicsLayoutWidget()
+        plotgoodclus = scatterWidgetgoodclus.addPlot(title="Clusters centers and distances")
+        plotgoodclus.setAspectLocked(True)
+
+        self.selectedgoodclus = pg.ScatterPlotItem(self.gcms[:,0], self.gcms[:,1], size=10, brush = self.brush3)  
+        plotgoodclus.setLabels(bottom=('x [nm]'), left=('y [nm]'))
+        plotgoodclus.setXRange(np.min(self.xroi), np.max(self.xroi), padding=0)
+        
+        plotgoodclus.addItem(self.selectedgoodclus)
+        
+        self.empty_layout(self.ui.scatterlayout_goodclus)
+        self.ui.scatterlayout_goodclus.addWidget(scatterWidgetgoodclus)
+        
+    def save_clus_CM(self):
+        
+        clusCMxy = np.array([self.gcms[:,0],self.gcms[:,1]])
+        clusCMxy = np.transpose(clusCMxy)
+        
+        filename = self.ui.lineEdit_filename.text()
+        filename = os.path.splitext(filename)[0]
+        dataNamecsv = utils.insertSuffix(filename, '_clusCM_xy.csv')
+        
+        #export array to CSV file (using 2 decimal places)
+        np.savetxt(dataNamecsv, clusCMxy, delimiter=",", fmt="%.2f",header="x, y", comments="")
         
         
         
-    def dist_cmDBSCAN(self):
+        
+    def latchange(self):
+        
+        self.bins = int(self.nbins.text())
+        self.lmin = float(self.latmin.text())
+        self.lmax = float(self.latmax.text())
+        
+      
+        self.KNdist_hist()
+        
+    def KNdist_hist(self):
         
         # compute distances to nearest neighbors (cm of the clusters obtained with DBSCAN)
         self.Nneighbor = float(self.ui.lineEdit_Nneighbor.text())
         Nneighbor = int(self.Nneighbor)
 
-        tree = KDTree(self.cms)
-        distances, indexes = tree.query(self.cms, Nneighbor+1) 
-        distances = distances[:,1:] # exclude distance to the same molecule; distances has N rows (#clusters) and M columns (# neighbors)
+        tree = KDTree(self.gcms)
+        distances, indexes = tree.query(self.gcms, Nneighbor+1) 
+        self.distances = distances[:,1:] # exclude distance to the same molecule; distances has N rows (#clusters) and M columns (# neighbors)
         indexes = indexes[:,1:]    
+                
+        histzWidget3 = pg.GraphicsLayoutWidget()
+        histabcm = histzWidget3.addPlot(title="distances Histogram")
+        
+        if self.lmin != None:
+            
+            self.distances = self.distances[(self.distances>self.lmin) & (self.distances<self.lmax)]
+            
+        else:
+            pass
+        
+        if self.bins != None:
+            
+            bins = self.bins
+        else:
+            bins = 20
+        
+        
+        histcmdist, bin_edgescmdist = np.histogram(self.distances, bins)
+        widthcmdist = np.mean(np.diff(bin_edgescmdist))
+        bincenterscmdist = np.mean(np.vstack([bin_edgescmdist[0:-1],bin_edgescmdist[1:]]), axis=0)
+        bargraphcmdist = pg.BarGraphItem(x = bincenterscmdist, height = histcmdist, 
+                                    width = widthcmdist, brush = self.brush3, pen = None)
+        histabcm.addItem(bargraphcmdist)
+                
+        self.empty_layout(self.ui.zhistlayout_cmdist)
+        self.ui.zhistlayout_cmdist.addWidget(histzWidget3)
+    
+        
+        
+    def dist_cmDBSCAN(self):
+        
+       
         
         scatterWidgetDBSCAN_cmdist = pg.GraphicsLayoutWidget()
         plotdistcmd = scatterWidgetDBSCAN_cmdist.addPlot(title="Clusters centers and distances")
@@ -607,6 +760,7 @@ class MPS_explorer(QtGui.QMainWindow):
         self.selectedcluscmd = pg.ScatterPlotItem(self.cms[:,0], self.cms[:,1], size=10, brush = self.brush3)  
         plotdistcmd.setLabels(bottom=('x [nm]'), left=('y [nm]'))
         plotdistcmd.setXRange(np.min(self.xroi), np.max(self.xroi), padding=0)
+        self.selectedcluscmd.sigClicked.connect(self.rx)
         
         plotdistcmd.addItem(self.selectedcluscmd)
         
@@ -614,20 +768,12 @@ class MPS_explorer(QtGui.QMainWindow):
         self.ui.scatterlayout_histcmdist.addWidget(scatterWidgetDBSCAN_cmdist) 
         
         
-        histzWidget3 = pg.GraphicsLayoutWidget()
-        histabcm = histzWidget3.addPlot(title="distances Histogram")
+
         
-        histcmdist, bin_edgescmdist = np.histogram(distances, bins='auto')
-        widthcmdist = np.mean(np.diff(bin_edgescmdist))
-        bincenterscmdist = np.mean(np.vstack([bin_edgescmdist[0:-1],bin_edgescmdist[1:]]), axis=0)
-        bargraphcmdist = pg.BarGraphItem(x = bincenterscmdist, height = histcmdist, 
-                                    width = widthcmdist, brush = self.brush1, pen = None)
-        histabcm.addItem(bargraphcmdist)
-                
-        self.empty_layout(self.ui.zhistlayout_cmdist)
-        self.ui.zhistlayout_cmdist.addWidget(histzWidget3)
         
-  
+        
+    
+    
         
     def empty_layout(self, layout):
         for i in reversed(range(layout.count())): 

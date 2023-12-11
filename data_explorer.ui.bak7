@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1548</width>
-    <height>1195</height>
+    <height>903</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -609,30 +609,17 @@
      </property>
      <layout class="QVBoxLayout" name="scatterlayout_goodclus"/>
     </widget>
-    <widget class="QPushButton" name="pushButton_savedistdata">
+    <widget class="QPushButton" name="pushButton_Nnhist">
      <property name="geometry">
       <rect>
-       <x>220</x>
-       <y>380</y>
-       <width>101</width>
+       <x>620</x>
+       <y>400</y>
+       <width>81</width>
        <height>31</height>
       </rect>
      </property>
      <property name="text">
-      <string>save dist data</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="pushButton_savecluscenters">
-     <property name="geometry">
-      <rect>
-       <x>540</x>
-       <y>40</y>
-       <width>121</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>save clusters centers</string>
+      <string>Nn histogram</string>
      </property>
     </widget>
    </widget>
