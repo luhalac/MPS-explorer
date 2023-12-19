@@ -135,9 +135,9 @@ class MPS_explorer(QtGui.QMainWindow):
         self.latmax.textChanged.connect(self.latchange)
         self.nbins.textChanged.connect(self.latchange)
         
-        self.lmin = None
-        self.lmax = None
-        self.bins = None
+        self.lmin = 0
+        self.lmax = 800
+        self.bins = 30
         
                 
         # define colors (color blind palette)
@@ -706,6 +706,8 @@ class MPS_explorer(QtGui.QMainWindow):
         self.lmin = float(self.latmin.text())
         self.lmax = float(self.latmax.text())
         
+        print(self.lmax)
+        
       
         self.KNdist_hist()
         
@@ -730,6 +732,13 @@ class MPS_explorer(QtGui.QMainWindow):
         else:
             pass
         
+        if self.lmax != None:
+            
+            self.distances = self.distances[(self.distances>self.lmin) & (self.distances<self.lmax)]
+            
+        else:
+            pass
+        
         if self.bins != None:
             
             bins = self.bins
@@ -743,6 +752,7 @@ class MPS_explorer(QtGui.QMainWindow):
         bargraphcmdist = pg.BarGraphItem(x = bincenterscmdist, height = histcmdist, 
                                     width = widthcmdist, brush = self.brush3, pen = None)
         histabcm.addItem(bargraphcmdist)
+        histabcm.setXRange(self.lmin, self.lmax)
                 
         self.empty_layout(self.ui.zhistlayout_cmdist)
         self.ui.zhistlayout_cmdist.addWidget(histzWidget3)
