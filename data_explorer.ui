@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1396</width>
-    <height>798</height>
+    <width>1414</width>
+    <height>735</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -183,9 +183,9 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>80</y>
+      <y>70</y>
       <width>691</width>
-      <height>681</height>
+      <height>631</height>
      </rect>
     </property>
     <property name="title">
@@ -205,8 +205,8 @@
     <widget class="QWidget" name="verticalLayoutWidget_2">
      <property name="geometry">
       <rect>
-       <x>420</x>
-       <y>20</y>
+       <x>400</x>
+       <y>10</y>
        <width>251</width>
        <height>151</height>
       </rect>
@@ -216,8 +216,8 @@
     <widget class="QRadioButton" name="radioButtonxz">
      <property name="geometry">
       <rect>
-       <x>150</x>
-       <y>380</y>
+       <x>100</x>
+       <y>340</y>
        <width>71</width>
        <height>17</height>
       </rect>
@@ -229,8 +229,8 @@
     <widget class="QPushButton" name="pushButton_smallROI">
      <property name="geometry">
       <rect>
-       <x>130</x>
-       <y>340</y>
+       <x>260</x>
+       <y>335</y>
        <width>111</width>
        <height>31</height>
       </rect>
@@ -243,7 +243,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>410</y>
+       <y>370</y>
        <width>381</width>
        <height>251</height>
       </rect>
@@ -253,8 +253,8 @@
     <widget class="QRadioButton" name="radioButtonxy">
      <property name="geometry">
       <rect>
-       <x>60</x>
-       <y>380</y>
+       <x>10</x>
+       <y>340</y>
        <width>71</width>
        <height>17</height>
       </rect>
@@ -266,8 +266,8 @@
     <widget class="QRadioButton" name="radioButtonyz">
      <property name="geometry">
       <rect>
-       <x>240</x>
-       <y>380</y>
+       <x>190</x>
+       <y>340</y>
        <width>71</width>
        <height>17</height>
       </rect>
@@ -279,8 +279,8 @@
     <widget class="QPushButton" name="pushButton_zrange">
      <property name="geometry">
       <rect>
-       <x>590</x>
-       <y>360</y>
+       <x>560</x>
+       <y>344</y>
        <width>81</width>
        <height>31</height>
       </rect>
@@ -292,8 +292,8 @@
     <widget class="QLineEdit" name="lineEdit_zmin">
      <property name="geometry">
       <rect>
-       <x>440</x>
-       <y>370</y>
+       <x>410</x>
+       <y>353</y>
        <width>61</width>
        <height>20</height>
       </rect>
@@ -305,8 +305,8 @@
     <widget class="QLineEdit" name="lineEdit_zmax">
      <property name="geometry">
       <rect>
-       <x>520</x>
-       <y>370</y>
+       <x>488</x>
+       <y>352</y>
        <width>61</width>
        <height>20</height>
       </rect>
@@ -315,8 +315,8 @@
     <widget class="QLabel" name="label">
      <property name="geometry">
       <rect>
-       <x>450</x>
-       <y>350</y>
+       <x>413</x>
+       <y>337</y>
        <width>47</width>
        <height>13</height>
       </rect>
@@ -328,8 +328,8 @@
     <widget class="QLabel" name="label_zmax">
      <property name="geometry">
       <rect>
-       <x>530</x>
-       <y>350</y>
+       <x>493</x>
+       <y>337</y>
        <width>47</width>
        <height>13</height>
       </rect>
@@ -341,10 +341,10 @@
     <widget class="QWidget" name="verticalLayoutWidget_3">
      <property name="geometry">
       <rect>
-       <x>420</x>
-       <y>410</y>
+       <x>407</x>
+       <y>380</y>
        <width>241</width>
-       <height>221</height>
+       <height>201</height>
       </rect>
      </property>
      <layout class="QVBoxLayout" name="zhistlayout_2"/>
@@ -352,8 +352,8 @@
     <widget class="QPushButton" name="pushButton_savexyzROI">
      <property name="geometry">
       <rect>
-       <x>430</x>
-       <y>640</y>
+       <x>420</x>
+       <y>592</y>
        <width>101</width>
        <height>31</height>
       </rect>
@@ -365,7 +365,7 @@
     <widget class="QWidget" name="verticalLayoutWidget_6">
      <property name="geometry">
       <rect>
-       <x>420</x>
+       <x>400</x>
        <y>180</y>
        <width>251</width>
        <height>151</height>
@@ -376,8 +376,8 @@
     <widget class="QPushButton" name="pushButton_savexyzROI_2">
      <property name="geometry">
       <rect>
-       <x>540</x>
-       <y>640</y>
+       <x>530</x>
+       <y>592</y>
        <width>101</width>
        <height>31</height>
       </rect>
@@ -391,8 +391,8 @@
     <property name="geometry">
      <rect>
       <x>710</x>
-      <y>60</y>
-      <width>671</width>
+      <y>0</y>
+      <width>651</width>
       <height>701</height>
      </rect>
     </property>
@@ -499,7 +499,7 @@
       <rect>
        <x>360</x>
        <y>90</y>
-       <width>301</width>
+       <width>281</width>
        <height>261</height>
       </rect>
      </property>
@@ -510,8 +510,8 @@
       <rect>
        <x>360</x>
        <y>440</y>
-       <width>301</width>
-       <height>241</height>
+       <width>251</width>
+       <height>211</height>
       </rect>
      </property>
      <layout class="QVBoxLayout" name="zhistlayout_cmdist"/>
@@ -642,7 +642,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1396</width>
+     <width>1414</width>
      <height>21</height>
     </rect>
    </property>
