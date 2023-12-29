@@ -32,6 +32,7 @@ pg.setConfigOption('background', 'w')
 pg.setConfigOption('foreground', 'k')
 from pyqtgraph.Qt import QtCore, QtGui
 from PyQt5.QtCore import pyqtSignal, pyqtSlot
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 import data_explorer
 from matplotlib import cm
@@ -43,7 +44,7 @@ from matplotlib import cm
 myappid = 'mycompany.myproduct.subproduct.version' # arbitrary string
 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
-class MPS_explorer(QtGui.QMainWindow):
+class MPS_explorer(QtWidgets.QMainWindow):
     
     def __init__(self, *args, **kwargs):
 
@@ -646,6 +647,7 @@ class MPS_explorer(QtGui.QMainWindow):
         self.selectedcluscmd = pg.ScatterPlotItem(self.cms[:,0], self.cms[:,1], size=10, brush = self.brush3)  
         plotdistcmd.setLabels(bottom=('x [nm]'), left=('y [nm]'))
         plotdistcmd.setXRange(np.min(self.xroi), np.max(self.xroi), padding=0)
+        self.gcms = []
         self.selectedcluscmd.sigClicked.connect(self.rx)
         
         plotdistcmd.addItem(self.selectedcluscmd)
@@ -667,6 +669,7 @@ class MPS_explorer(QtGui.QMainWindow):
         
         self.good_cms = [elem for i, elem in enumerate(self.cms) if i not in badind]
         self.gcms = np.array(self.good_cms)
+   
 
         
     
@@ -675,6 +678,12 @@ class MPS_explorer(QtGui.QMainWindow):
         scatterWidgetgoodclus = pg.GraphicsLayoutWidget()
         plotgoodclus = scatterWidgetgoodclus.addPlot(title="Clusters centers and distances")
         plotgoodclus.setAspectLocked(True)
+        
+        
+        if len(self.gcms) == 0:
+            self.gcms = self.cms
+        else:
+            pass
 
         self.selectedgoodclus = pg.ScatterPlotItem(self.gcms[:,0], self.gcms[:,1], size=10, brush = self.brush3)  
         plotgoodclus.setLabels(bottom=('x [nm]'), left=('y [nm]'))
@@ -695,7 +704,7 @@ class MPS_explorer(QtGui.QMainWindow):
         dataNamecsv = utils.insertSuffix(filename, '_clusCM_xy.csv')
         
         #export array to CSV file (using 2 decimal places)
-        np.savetxt(dataNamecsv, clusCMxy, delimiter=",", fmt="%.2f",header="x, y", comments="")
+        np.savetxt(dataNamecsv, clusCMxy, delimiter=",", fmt="%.2f", comments="")
         
         
         
@@ -720,6 +729,8 @@ class MPS_explorer(QtGui.QMainWindow):
         tree = KDTree(self.gcms)
         distances, indexes = tree.query(self.gcms, Nneighbor+1) 
         self.distances = distances[:,1:] # exclude distance to the same molecule; distances has N rows (#clusters) and M columns (# neighbors)
+        
+        print(len(self.distances))
         indexes = indexes[:,1:]    
                 
         histzWidget3 = pg.GraphicsLayoutWidget()
@@ -791,8 +802,8 @@ class MPS_explorer(QtGui.QMainWindow):
     
 if __name__ == '__main__':
     
-    
-    app = QtGui.QApplication([])
+    app = QtWidgets.QApplication([])
+    # app = QtGui.QApplication([])
     win = MPS_explorer()
     win.show()
     app.exec_()
