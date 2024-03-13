@@ -538,7 +538,7 @@ class MPSExplorer(QtWidgets.QMainWindow):
 
  
         scatterWidgetDBSCAN = pg.GraphicsLayoutWidget()
-        plotclusters = scatterWidgetDBSCAN.addPlot(title="Clustered data with DBSCAN")
+        plotclusters = scatterWidgetDBSCAN.addPlot(title="Clustered data")
         plotclusters.setAspectLocked(True)
 
         self.selecteddata = pg.ScatterPlotItem(XYZ[:,0], XYZ[:,1], size=2, brush = self.brush1)  

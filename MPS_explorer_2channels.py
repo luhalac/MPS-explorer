@@ -300,237 +300,415 @@ class MPS_explorer(QtWidgets.QMainWindow):
         return xdata2, ydata2, zdata2
 
     
-    def scatterplot(self):  
+    # def scatterplot(self):  
         
+    #     # Scatter plot data Ch1
+    #     filename1 = self.ui.lineEdit_filename.text()
+    #     xdata, ydata, zdata  = self.import_file_ch1(filename1)
+ 
+    #     self.x = xdata
+    #     self.y = ydata
+    #     self.z = zdata 
+        
+    #     xmin = np.min(self.x)
+    #     xmax = np.max(self.x)
+        
+    #     ymin = np.min(self.y)
+    #     ymax = np.max(self.y)
+
+
+    #     scatterWidgetxy = pg.GraphicsLayoutWidget()
+    #     plotxy = scatterWidgetxy.addPlot(title="Scatter plot (x,y) both channels")
+    #     plotxy.setLabels(bottom=('x [nm]'), left=('y [nm]'))
+    #     plotxy.setAspectLocked(True)
+      
+               
+    #     xy = pg.ScatterPlotItem(self.x, self.y, pen=None,
+    #                             brush=self.brush1, size=1)
+    
+        
+    #     plotxy.addItem(xy)
+    #     plotxy.setXRange(xmin,xmax, padding=0)
+    #     plotxy.setYRange(ymin,ymax, padding=0)
+        
+    #     self.empty_layout(self.ui.scatterlayout)
+    #     self.ui.scatterlayout.addWidget(scatterWidgetxy)
+        
+        
+    #     npixels = np.size(self.x)
+    #     ROIpos = (int(min(self.x)), int(min(self.y)))
+    #     ROIextent = int(npixels/10)
+        
+
+
+    #     ROIpen = pg.mkPen(color='b')
+    #     self.roi = pg.ROI(ROIpos, ROIextent, pen = ROIpen)  
+        
+    #     self.roi.setZValue(10)
+    #     self.roi.addScaleHandle([1, 1], [0, 0])
+    #     self.roi.addRotateHandle([0, 0], [1, 1])                             
+    #     plotxy.addItem(self.roi)
+        
+                
+
+    #     histzWidget = pg.GraphicsLayoutWidget()
+    #     histabsz = histzWidget.addPlot(title="z Histogram Ch 1")
+        
+    #     histz, bin_edgesz = np.histogram(self.z, bins=500)
+    #     widthzabs = np.mean(np.diff(bin_edgesz))
+    #     bincentersz = np.mean(np.vstack([bin_edgesz[0:-1],bin_edgesz[1:]]), axis=0)
+    #     bargraphz = pg.BarGraphItem(x = bincentersz, height = histz, 
+    #                                 width = widthzabs, brush = self.brush1, pen = self.pen1)
+    #     histabsz.addItem(bargraphz)
+                
+    #     self.empty_layout(self.ui.zhistlayoutch1)
+    #     self.ui.zhistlayoutch1.addWidget(histzWidget)
+
+        
+    #     # Scatter plot data Ch2
+
+    #     filename2 = self.ui.lineEdit_filename_2.text()
+        
+    #     if filename2 == '':
+            
+            
+    #         pass
+        
+    #     else:
+
+    #         xdata2, ydata2, zdata2  = self.import_file_ch2(filename2)
+    
+    #         self.x2 = xdata2
+    #         self.y2 = ydata2
+    #         self.z2 = zdata2 
+    
+    
+    #         xy2 = pg.ScatterPlotItem(self.x2, self.y2, pen=None,
+    #                                 brush=self.brush2, size=1)
+            
+                   
+    #         plotxy.addItem(xy2)
+    
+    #         self.empty_layout(self.ui.scatterlayout)
+    #         self.ui.scatterlayout.addWidget(scatterWidgetxy)
+            
+    #         histzch2Widget = pg.GraphicsLayoutWidget()
+    #         histabszch2 = histzch2Widget.addPlot(title="z Histogram Ch 2")
+            
+    #         histz2, bin_edgesz2 = np.histogram(self.z2, bins=500)
+    #         widthzabs2 = np.mean(np.diff(bin_edgesz2))
+    #         bincentersz2 = np.mean(np.vstack([bin_edgesz2[0:-1],bin_edgesz2[1:]]), axis=0)
+    #         bargraphz2 = pg.BarGraphItem(x = bincentersz2, height = histz2, 
+    #                                     width = widthzabs2, brush = self.brush2, pen = self.pen2)
+    #         histabszch2.addItem(bargraphz2)
+                    
+    #         self.empty_layout(self.ui.zhistlayoutch2)
+    #         self.ui.zhistlayoutch2.addWidget(histzch2Widget)
+     
+    
+    def scatterplot(self):  
         # Scatter plot data Ch1
         filename1 = self.ui.lineEdit_filename.text()
-        xdata, ydata, zdata  = self.import_file_ch1(filename1)
- 
+        xdata, ydata, zdata = self.import_file_ch1(filename1)
+    
         self.x = xdata
         self.y = ydata
         self.z = zdata 
-        
-        xmin = np.min(self.x)
-        xmax = np.max(self.x)
-        
-        ymin = np.min(self.y)
-        ymax = np.max(self.y)
-
-
+    
+        xmin, xmax = np.min(self.x), np.max(self.x)
+        ymin, ymax = np.min(self.y), np.max(self.y)
+    
         scatterWidgetxy = pg.GraphicsLayoutWidget()
         plotxy = scatterWidgetxy.addPlot(title="Scatter plot (x,y) both channels")
         plotxy.setLabels(bottom=('x [nm]'), left=('y [nm]'))
         plotxy.setAspectLocked(True)
-      
-               
-        xy = pg.ScatterPlotItem(self.x, self.y, pen=None,
-                                brush=self.brush1, size=1)
     
-        
+        xy = pg.ScatterPlotItem(self.x, self.y, pen=None, brush=self.brush1, size=1)
+    
         plotxy.addItem(xy)
-        plotxy.setXRange(xmin,xmax, padding=0)
-        plotxy.setYRange(ymin,ymax, padding=0)
-        
+        plotxy.setXRange(xmin, xmax, padding=0)
+        plotxy.setYRange(ymin, ymax, padding=0)
+    
         self.empty_layout(self.ui.scatterlayout)
         self.ui.scatterlayout.addWidget(scatterWidgetxy)
-        
-        
+    
         npixels = np.size(self.x)
         ROIpos = (int(min(self.x)), int(min(self.y)))
-        ROIextent = int(npixels/10)
-        
-
-
+        ROIextent = int(npixels / 10)
+    
         ROIpen = pg.mkPen(color='b')
-        self.roi = pg.ROI(ROIpos, ROIextent, pen = ROIpen)  
-        
+        self.roi = pg.ROI(ROIpos, ROIextent, pen=ROIpen)
         self.roi.setZValue(10)
         self.roi.addScaleHandle([1, 1], [0, 0])
-        self.roi.addRotateHandle([0, 0], [1, 1])                             
+        self.roi.addRotateHandle([0, 0], [1, 1])
         plotxy.addItem(self.roi)
-        
-                
-
+    
         histzWidget = pg.GraphicsLayoutWidget()
         histabsz = histzWidget.addPlot(title="z Histogram Ch 1")
-        
+    
         histz, bin_edgesz = np.histogram(self.z, bins=500)
         widthzabs = np.mean(np.diff(bin_edgesz))
-        bincentersz = np.mean(np.vstack([bin_edgesz[0:-1],bin_edgesz[1:]]), axis=0)
-        bargraphz = pg.BarGraphItem(x = bincentersz, height = histz, 
-                                    width = widthzabs, brush = self.brush1, pen = self.pen1)
+        bincentersz = np.mean(np.vstack([bin_edgesz[0:-1], bin_edgesz[1:]]), axis=0)
+        bargraphz = pg.BarGraphItem(x=bincentersz, height=histz, width=widthzabs, brush=self.brush1, pen=self.pen1)
         histabsz.addItem(bargraphz)
-                
+    
         self.empty_layout(self.ui.zhistlayoutch1)
         self.ui.zhistlayoutch1.addWidget(histzWidget)
-
-        
-        # Scatter plot data Ch2
-
-        filename2 = self.ui.lineEdit_filename_2.text()
-        
-        if filename2 == '':
-            
-            
-            pass
-        
-        else:
-
-            xdata2, ydata2, zdata2  = self.import_file_ch2(filename2)
     
+        # Scatter plot data Ch2
+        filename2 = self.ui.lineEdit_filename_2.text()
+    
+        if filename2:
+            xdata2, ydata2, zdata2 = self.import_file_ch2(filename2)
             self.x2 = xdata2
             self.y2 = ydata2
-            self.z2 = zdata2 
+            self.z2 = zdata2
     
-    
-            xy2 = pg.ScatterPlotItem(self.x2, self.y2, pen=None,
-                                    brush=self.brush2, size=1)
-            
-                   
+            xy2 = pg.ScatterPlotItem(self.x2, self.y2, pen=None, brush=self.brush2, size=1)
             plotxy.addItem(xy2)
     
             self.empty_layout(self.ui.scatterlayout)
             self.ui.scatterlayout.addWidget(scatterWidgetxy)
-            
+    
             histzch2Widget = pg.GraphicsLayoutWidget()
             histabszch2 = histzch2Widget.addPlot(title="z Histogram Ch 2")
-            
+    
             histz2, bin_edgesz2 = np.histogram(self.z2, bins=500)
             widthzabs2 = np.mean(np.diff(bin_edgesz2))
-            bincentersz2 = np.mean(np.vstack([bin_edgesz2[0:-1],bin_edgesz2[1:]]), axis=0)
-            bargraphz2 = pg.BarGraphItem(x = bincentersz2, height = histz2, 
-                                        width = widthzabs2, brush = self.brush2, pen = self.pen2)
+            bincentersz2 = np.mean(np.vstack([bin_edgesz2[0:-1], bin_edgesz2[1:]]), axis=0)
+            bargraphz2 = pg.BarGraphItem(x=bincentersz2, height=histz2, width=widthzabs2, brush=self.brush2, pen=self.pen2)
             histabszch2.addItem(bargraphz2)
-                    
+    
             self.empty_layout(self.ui.zhistlayoutch2)
             self.ui.zhistlayoutch2.addWidget(histzch2Widget)
-     
-              
-          
-    
+
     def updateROIPlot(self):
-        
-        filename2 = self.ui.lineEdit_filename_2.text()
-                        
         scatterWidgetROI = pg.GraphicsLayoutWidget()
         plotROI = scatterWidgetROI.addPlot(title="Scatter plot ROI selected")
         plotROI.setAspectLocked(True)
-        
+    
         xmin, ymin = self.roi.pos()
         xmax, ymax = self.roi.pos() + self.roi.size()
-        
-        indx = np.where((self.x>xmin) & (self.x<xmax))
-        indy = np.where((self.y>ymin) & (self.y<ymax))
-        
+    
+        indx = np.where((self.x > xmin) & (self.x < xmax))
+        indy = np.where((self.y > ymin) & (self.y < ymax))
         mask = np.in1d(indx, indy)
-        
         ind = np.nonzero(mask)
-        index=indx[0][ind[0]]
-        
+        index = indx[0][ind[0]]
         self.xroi = self.x[index]
         self.yroi = self.y[index]
-        
-        if filename2 == '':
-            
-            pass
-        
-        else :
-            indx2 = np.where((self.x2>xmin) & (self.x2<xmax))
-            indy2 = np.where((self.y2>ymin) & (self.y2<ymax))
-            
+    
+        if self.ui.lineEdit_filename_2.text():
+            indx2 = np.where((self.x2 > xmin) & (self.x2 < xmax))
+            indy2 = np.where((self.y2 > ymin) & (self.y2 < ymax))
             mask2 = np.in1d(indx2, indy2)
-            
             ind2 = np.nonzero(mask2)
-            index2=indx2[0][ind2[0]]
-            
+            index2 = indx2[0][ind2[0]]
             self.xroi2 = self.x2[index2]
             self.yroi2 = self.y2[index2]
-        
+    
         zmin = self.ui.lineEdit_zmin.text()
         zmax = self.ui.lineEdit_zmax.text()
-        
-        if zmin == "":
-            
-            self.zmin = None
-        else:    
-            self.zmin = int(self.ui.lineEdit_zmin.text())
-            
-        if zmax == "":
-            
-            self.zmax = None
-        else:    
-            self.zmax = int(self.ui.lineEdit_zmax.text())
-        
-        
-        if self.zmax == None: 
-            
+    
+        self.zmin = int(zmin) if zmin else None
+        self.zmax = int(zmax) if zmax else None
+    
+        if self.zmax is None:
             self.zroi = self.z[index]
-            
-
         else:
             zroi = self.z[index]
-            indz = np.where((zroi>self.zmin) & (zroi<self.zmax))
+            indz = np.where((zroi > self.zmin) & (zroi < self.zmax))
             self.zroi = zroi[indz]
             self.xroi = self.xroi[indz]
             self.yroi = self.yroi[indz]
-            
-            if filename2 == '':
-            
-                pass
-        
-            else :
-            
+    
+            if self.ui.lineEdit_filename_2.text():
                 zroi2 = self.z2[index2]
-                indz2 = np.where((zroi2>self.zmin) & (zroi2<self.zmax))
+                indz2 = np.where((zroi2 > self.zmin) & (zroi2 < self.zmax))
                 self.zroi2 = zroi2[indz2]
                 self.xroi2 = self.xroi2[indz2]
                 self.yroi2 = self.yroi2[indz2]
-            
-        
+    
         if self.buttonxy.isChecked():
-            self.selected = pg.ScatterPlotItem(self.xroi, self.yroi, pen = self.pen1,
-                                               brush = None, size = 5)  
+            self.selected = pg.ScatterPlotItem(self.xroi, self.yroi, pen=self.pen1, brush=None, size=5)
             plotROI.setLabels(bottom=('x [nm]'), left=('y [nm]'))
             plotROI.setXRange(np.min(self.xroi), np.max(self.xroi), padding=0)
-            
-        
-        if self.buttonxz.isChecked():
-            self.selected = pg.ScatterPlotItem(self.xroi, self.zroi, pen=self.pen1,
-                                               brush = None, size = 5)
-            plotROI.setLabels(bottom=('x [nm]'), left=('z [nm]'))
-            plotROI.setXRange(np.min(self.xroi), np.max(self.xroi), padding=0)
-            
-        if self.buttonyz.isChecked():
-            self.selected = pg.ScatterPlotItem(self.yroi, self.zroi, pen=self.pen1,
-                                               brush = None, size = 5)
+            plotROI.setYRange(np.min(self.yroi), np.max(self.yroi), padding=0)
+            plotROI.addItem(self.selected)
+    
+            if self.ui.lineEdit_filename_2.text():
+                selected2 = pg.ScatterPlotItem(self.xroi2, self.yroi2, pen=self.pen2, brush=None, size=5)
+                plotROI.addItem(selected2)
+    
+        elif self.buttonyz.isChecked():
+            self.selected = pg.ScatterPlotItem(self.yroi, self.zroi, pen=self.pen1, brush=None, size=5)
             plotROI.setLabels(bottom=('y [nm]'), left=('z [nm]'))
             plotROI.setXRange(np.min(self.yroi), np.max(self.yroi), padding=0)
-        
-        else:
-            pass
-        
-        
-        plotROI.addItem(self.selected)
-        
-        
+            plotROI.setYRange(np.min(self.zroi), np.max(self.zroi), padding=0)
+            plotROI.addItem(self.selected)
+    
+            if self.ui.lineEdit_filename_2.text():
+                selected2 = pg.ScatterPlotItem(self.yroi2, self.zroi2, pen=self.pen2, brush=None, size=5)
+                plotROI.addItem(selected2)
+    
+        elif self.buttonxz.isChecked():
+            self.selected = pg.ScatterPlotItem(self.xroi, self.zroi, pen=self.pen1, brush=None, size=5)
+            plotROI.setLabels(bottom=('x [nm]'), left=('z [nm]'))
+            plotROI.setXRange(np.min(self.xroi), np.max(self.xroi), padding=0)
+            plotROI.setYRange(np.min(self.zroi), np.max(self.zroi), padding=0)
+            plotROI.addItem(self.selected)
+    
+            if self.ui.lineEdit_filename_2.text():
+                selected2 = pg.ScatterPlotItem(self.xroi2, self.zroi2, pen=self.pen2, brush=None, size=5)
+                plotROI.addItem(selected2)
+    
         self.empty_layout(self.ui.scatterlayout_3)
-        self.ui.scatterlayout_3.addWidget(scatterWidgetROI)    
+        self.ui.scatterlayout_3.addWidget(scatterWidgetROI)
+          
+          
+    
+    # def updateROIPlot(self):
+        
+    #     filename2 = self.ui.lineEdit_filename_2.text()
+                        
+    #     scatterWidgetROI = pg.GraphicsLayoutWidget()
+    #     plotROI = scatterWidgetROI.addPlot(title="Scatter plot ROI selected")
+    #     plotROI.setAspectLocked(True)
+        
+    #     xmin, ymin = self.roi.pos()
+    #     xmax, ymax = self.roi.pos() + self.roi.size()
+        
+    #     indx = np.where((self.x>xmin) & (self.x<xmax))
+    #     indy = np.where((self.y>ymin) & (self.y<ymax))
+        
+    #     mask = np.in1d(indx, indy)
+        
+    #     ind = np.nonzero(mask)
+    #     index=indx[0][ind[0]]
+        
+    #     self.xroi = self.x[index]
+    #     self.yroi = self.y[index]
+        
+    #     if filename2 == '':
+            
+    #         pass
+        
+    #     else :
+    #         indx2 = np.where((self.x2>xmin) & (self.x2<xmax))
+    #         indy2 = np.where((self.y2>ymin) & (self.y2<ymax))
+            
+    #         mask2 = np.in1d(indx2, indy2)
+            
+    #         ind2 = np.nonzero(mask2)
+    #         index2=indx2[0][ind2[0]]
+            
+    #         self.xroi2 = self.x2[index2]
+    #         self.yroi2 = self.y2[index2]
+        
+    #     zmin = self.ui.lineEdit_zmin.text()
+    #     zmax = self.ui.lineEdit_zmax.text()
+        
+    #     if zmin == "":
+            
+    #         self.zmin = None
+    #     else:    
+    #         self.zmin = int(self.ui.lineEdit_zmin.text())
+            
+    #     if zmax == "":
+            
+    #         self.zmax = None
+    #     else:    
+    #         self.zmax = int(self.ui.lineEdit_zmax.text())
         
         
-        histzWidget2 = pg.GraphicsLayoutWidget()
-        histabsz2 = histzWidget2.addPlot(title="z ROI Histogram")
+    #     if self.zmax == None: 
+            
+    #         self.zroi = self.z[index]
+            
+
+    #     else:
+    #         zroi = self.z[index]
+    #         indz = np.where((zroi>self.zmin) & (zroi<self.zmax))
+    #         self.zroi = zroi[indz]
+    #         self.xroi = self.xroi[indz]
+    #         self.yroi = self.yroi[indz]
+            
+    #         if filename2 == '':
+            
+    #             pass
         
-        histz2, bin_edgesz2 = np.histogram(self.zroi, bins='auto')
-        widthzabs2 = np.mean(np.diff(bin_edgesz2))
-        bincentersz2 = np.mean(np.vstack([bin_edgesz2[0:-1],bin_edgesz2[1:]]), axis=0)
-        bargraphz2 = pg.BarGraphItem(x = bincentersz2, height = histz2, 
-                                    width = widthzabs2, brush = self.brush1, pen = self.pen1)
-        bargraphz2.setOpacity(0.5) 
-        histabsz2.addItem(bargraphz2)
+    #         else :
+            
+    #             zroi2 = self.z2[index2]
+    #             indz2 = np.where((zroi2>self.zmin) & (zroi2<self.zmax))
+    #             self.zroi2 = zroi2[indz2]
+    #             self.xroi2 = self.xroi2[indz2]
+    #             self.yroi2 = self.yroi2[indz2]
+            
         
+    #     if self.buttonxy.isChecked():
+    #         self.selected = pg.ScatterPlotItem(self.xroi, self.yroi, pen = self.pen1,
+    #                                            brush = None, size = 5)  
+    #         plotROI.setLabels(bottom=('x [nm]'), left=('y [nm]'))
+    #         plotROI.setXRange(np.min(self.xroi), np.max(self.xroi), padding=0)
+            
+            
+    #         if filename2 == '':
                 
-        self.empty_layout(self.ui.zhistlayout_2)
-        self.ui.zhistlayout_2.addWidget(histzWidget2)
+                
+    #             pass
+            
+    #         else:
+
+    #             self.selected2 = pg.ScatterPlotItem(self.xroi2, self.yroi2, pen = self.pen2,
+    #                                     brush = None, size = 5)
+
+            
+        
+    #     if self.buttonxz.isChecked():
+    #         self.selected = pg.ScatterPlotItem(self.xroi, self.zroi, pen=self.pen1,
+    #                                            brush = None, size = 5)
+    #         plotROI.setLabels(bottom=('x [nm]'), left=('z [nm]'))
+    #         plotROI.setXRange(np.min(self.xroi), np.max(self.xroi), padding=0)
+            
+    #     if self.buttonyz.isChecked():
+    #         self.selected = pg.ScatterPlotItem(self.yroi, self.zroi, pen=self.pen1,
+    #                                            brush = None, size = 5)
+    #         plotROI.setLabels(bottom=('y [nm]'), left=('z [nm]'))
+    #         plotROI.setXRange(np.min(self.yroi), np.max(self.yroi), padding=0)
+        
+    #     else:
+    #         pass
+        
+        
+    #     plotROI.addItem(self.selected)
+    #     plotROI.addItem(self.selected2)
+        
+    #     self.empty_layout(self.ui.scatterlayout_3)
+    #     self.ui.scatterlayout_3.addWidget(scatterWidgetROI)    
+        
+        
+    #     histzWidget2 = pg.GraphicsLayoutWidget()
+    #     histabsz2 = histzWidget2.addPlot(title="z ROI Histogram")
+        
+    #     histz2, bin_edgesz2 = np.histogram(self.zroi, bins='auto')
+    #     widthzabs2 = np.mean(np.diff(bin_edgesz2))
+    #     bincentersz2 = np.mean(np.vstack([bin_edgesz2[0:-1],bin_edgesz2[1:]]), axis=0)
+    #     bargraphz2 = pg.BarGraphItem(x = bincentersz2, height = histz2, 
+    #                                 width = widthzabs2, brush = self.brush1, pen = self.pen1)
+    #     bargraphz2.setOpacity(0.5) 
+    #     histabsz2.addItem(bargraphz2)
+        
+    #     histz22, bin_edgesz22 = np.histogram(self.zroi2, bins='auto')
+    #     widthzabs22 = np.mean(np.diff(bin_edgesz22))
+    #     bincentersz22 = np.mean(np.vstack([bin_edgesz22[0:-1],bin_edgesz22[1:]]), axis=0)
+    #     bargraphz22 = pg.BarGraphItem(x = bincentersz22, height = histz22, 
+    #                                 width = widthzabs22, brush = self.brush2, pen = self.pen2)
+    #     bargraphz22.setOpacity(0.3)
+    #     histabsz2.addItem(bargraphz22)
+                
+    #     self.empty_layout(self.ui.zhistlayout_2)
+    #     self.ui.zhistlayout_2.addWidget(histzWidget2)
         
 
     def savexyzROI(self):
@@ -616,6 +794,7 @@ class MPS_explorer(QtWidgets.QMainWindow):
    
         range_max = len(XYZ)
         Xc = np.array([XYZ[i] for i in range(0, range_max) if dblabels[i] != -1])
+        labels = np.array([dblabels[i] for i in range(0, range_max) if dblabels[i] != -1])
         
         self.cms = np.array(cm_list)
         self.cms = np.around(self.cms, decimals=2)
