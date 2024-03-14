@@ -35,7 +35,7 @@ from PyQt5.QtCore import pyqtSignal, pyqtSlot
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 import data_explorer
-from matplotlib import cm
+
 
 
 # see https://stackoverflow.com/questions/1551605
@@ -76,10 +76,7 @@ class MPS_explorer(QtWidgets.QMainWindow):
         self.browsefile2.clicked.connect(self.select_file2)
         
         
-        self.buttonxy = self.ui.radioButtonxy
-        self.buttonxz = self.ui.radioButtonxz
-        self.buttonyz = self.ui.radioButtonyz
-        
+       
         self.scatter = self.ui.pushButton_scatter
         self.scatter.clicked.connect(self.scatterplot)
         
@@ -310,6 +307,8 @@ class MPS_explorer(QtWidgets.QMainWindow):
         self.y = ydata
         self.z = zdata 
         
+        self.data_points = np.column_stack((self.x, self.y))
+        
         xmin = np.min(self.x)
         xmax = np.max(self.x)
         
@@ -342,12 +341,27 @@ class MPS_explorer(QtWidgets.QMainWindow):
 
 
         ROIpen = pg.mkPen(color='b')
-        self.roi = pg.ROI(ROIpos, ROIextent, pen = ROIpen)  
+        # self.roi = pg.ROI(ROIpos, ROIextent, pen = ROIpen)  
         
-        self.roi.setZValue(10)
-        self.roi.addScaleHandle([1, 1], [0, 0])
-        self.roi.addRotateHandle([0, 0], [1, 1])                             
-        plotxy.addItem(self.roi)
+        # self.roi.setZValue(10)
+        # self.roi.addScaleHandle([1, 1], [0, 0])
+        # self.roi.addRotateHandle([0, 0], [1, 1]) 
+        #plotxy.addItem(self.roi)               
+
+        
+        # Create circular ROI
+        self.circular_roi = pg.CircleROI(ROIpos, ROIextent, movable=True, pen = ROIpen)
+        self.circular_roi.addScaleHandle([1, 1], [0, 0])
+        self.circular_roi.setZValue(10)
+        
+        # Add ROI to the scatterplot
+        plotxy.addItem(self.circular_roi)
+        
+        
+        # Connect signals
+        self.circular_roi.sigRegionChangeFinished.connect(self.updateROIPlot)
+    
+        
         
                 
 
@@ -410,104 +424,79 @@ class MPS_explorer(QtWidgets.QMainWindow):
     
     def updateROIPlot(self):
         
-        filename2 = self.ui.lineEdit_filename_2.text()
                         
         scatterWidgetROI = pg.GraphicsLayoutWidget()
         plotROI = scatterWidgetROI.addPlot(title="Scatter plot ROI selected")
         plotROI.setAspectLocked(True)
         
-        xmin, ymin = self.roi.pos()
-        xmax, ymax = self.roi.pos() + self.roi.size()
         
-        indx = np.where((self.x>xmin) & (self.x<xmax))
-        indy = np.where((self.y>ymin) & (self.y<ymax))
+        # Get circular ROI position and size
+        pos = self.circular_roi.pos()
+        size = self.circular_roi.size()
         
-        mask = np.in1d(indx, indy)
+        diameter = self.circular_roi.size()
+
+        # Calculate and return the radius (half of the diameter)
+        radius = diameter / 2
+       
+        # Calculate the center coordinates
+        center_x = pos.x() + size / 2
+        center_y = pos.y() + size / 2
         
-        ind = np.nonzero(mask)
-        index=indx[0][ind[0]]
+        center = np.column_stack((center_x, center_y))
         
-        self.xroi = self.x[index]
-        self.yroi = self.y[index]
         
-        if filename2 == '':
-            
-            pass
         
-        else :
-            indx2 = np.where((self.x2>xmin) & (self.x2<xmax))
-            indy2 = np.where((self.y2>ymin) & (self.y2<ymax))
-            
-            mask2 = np.in1d(indx2, indy2)
-            
-            ind2 = np.nonzero(mask2)
-            index2=indx2[0][ind2[0]]
-            
-            self.xroi2 = self.x2[index2]
-            self.yroi2 = self.y2[index2]
+        # Iterate through data points and check if they are inside the circular ROI
+        points_inside_roi = []
+        for point in self.data_points:
+            if np.any(np.linalg.norm(point - center) <= radius):
+                points_inside_roi.append(point)
         
+        # Convert list of points to numpy array
+        points_inside_roi = np.array(points_inside_roi)
+        
+        
+        
+        self.xroi = points_inside_roi[:,0]
+        self.yroi = points_inside_roi[:,1]
+        
+        
+        self.zroi = [self.z[i] for i, point in enumerate(self.data_points) if point in points_inside_roi]
+        
+        
+        # Define zmin and zmax
         zmin = self.ui.lineEdit_zmin.text()
         zmax = self.ui.lineEdit_zmax.text()
         
+        # Convert zmin and zmax to numeric types if they are strings
         if zmin == "":
-            
             self.zmin = None
         else:    
-            self.zmin = int(self.ui.lineEdit_zmin.text())
-            
+            self.zmin = float(zmin)
+        
         if zmax == "":
-            
             self.zmax = None
         else:    
-            self.zmax = int(self.ui.lineEdit_zmax.text())
+            self.zmax = float(zmax)
         
         
-        if self.zmax == None: 
-            
-            self.zroi = self.z[index]
-            
-
+        self.zroi = np.array(self.zroi)
+        # Define the z sectioning using zmin and zmax
+        if self.zmin is not None and self.zmax is not None:
+            z_roi_indices = np.where((self.zroi >= self.zmin) & (self.zroi <= self.zmax))[0]
+            self.zroi = self.zroi[z_roi_indices]
         else:
-            zroi = self.z[index]
-            indz = np.where((zroi>self.zmin) & (zroi<self.zmax))
-            self.zroi = zroi[indz]
-            self.xroi = self.xroi[indz]
-            self.yroi = self.yroi[indz]
-            
-            if filename2 == '':
-            
-                pass
-        
-            else :
-            
-                zroi2 = self.z2[index2]
-                indz2 = np.where((zroi2>self.zmin) & (zroi2<self.zmax))
-                self.zroi2 = zroi2[indz2]
-                self.xroi2 = self.xroi2[indz2]
-                self.yroi2 = self.yroi2[indz2]
-            
-        
-        if self.buttonxy.isChecked():
-            self.selected = pg.ScatterPlotItem(self.xroi, self.yroi, pen = self.pen1,
-                                               brush = None, size = 5)  
-            plotROI.setLabels(bottom=('x [nm]'), left=('y [nm]'))
-            plotROI.setXRange(np.min(self.xroi), np.max(self.xroi), padding=0)
-            
-        
-        if self.buttonxz.isChecked():
-            self.selected = pg.ScatterPlotItem(self.xroi, self.zroi, pen=self.pen1,
-                                               brush = None, size = 5)
-            plotROI.setLabels(bottom=('x [nm]'), left=('z [nm]'))
-            plotROI.setXRange(np.min(self.xroi), np.max(self.xroi), padding=0)
-            
-        if self.buttonyz.isChecked():
-            self.selected = pg.ScatterPlotItem(self.yroi, self.zroi, pen=self.pen1,
-                                               brush = None, size = 5)
-            plotROI.setLabels(bottom=('y [nm]'), left=('z [nm]'))
-            plotROI.setXRange(np.min(self.yroi), np.max(self.yroi), padding=0)
-        
-        else:
+            # Keep all z values if zmin or zmax is not defined
             pass
+  
+        
+    
+        self.selected = pg.ScatterPlotItem(self.xroi, self.yroi, pen = self.pen1,
+                                           brush = None, size = 5)  
+        plotROI.setLabels(bottom=('x [nm]'), left=('y [nm]'))
+        plotROI.setXRange(np.min(self.xroi), np.max(self.xroi), padding=0)
+
         
         
         plotROI.addItem(self.selected)

@@ -197,7 +197,7 @@
        <x>10</x>
        <y>20</y>
        <width>381</width>
-       <height>311</height>
+       <height>281</height>
       </rect>
      </property>
      <layout class="QVBoxLayout" name="scatterlayout"/>
@@ -213,26 +213,13 @@
      </property>
      <layout class="QVBoxLayout" name="zhistlayoutch1"/>
     </widget>
-    <widget class="QRadioButton" name="radioButtonxz">
-     <property name="geometry">
-      <rect>
-       <x>100</x>
-       <y>340</y>
-       <width>71</width>
-       <height>17</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Plot (x,z)</string>
-     </property>
-    </widget>
     <widget class="QPushButton" name="pushButton_smallROI">
      <property name="geometry">
       <rect>
-       <x>260</x>
-       <y>335</y>
-       <width>111</width>
-       <height>31</height>
+       <x>10</x>
+       <y>310</y>
+       <width>90</width>
+       <height>20</height>
       </rect>
      </property>
      <property name="text">
@@ -243,38 +230,12 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>370</y>
+       <y>340</y>
        <width>381</width>
-       <height>251</height>
+       <height>281</height>
       </rect>
      </property>
      <layout class="QVBoxLayout" name="scatterlayout_3"/>
-    </widget>
-    <widget class="QRadioButton" name="radioButtonxy">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>340</y>
-       <width>71</width>
-       <height>17</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Plot (x,y)</string>
-     </property>
-    </widget>
-    <widget class="QRadioButton" name="radioButtonyz">
-     <property name="geometry">
-      <rect>
-       <x>190</x>
-       <y>340</y>
-       <width>71</width>
-       <height>17</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Plot (y,z)</string>
-     </property>
     </widget>
     <widget class="QPushButton" name="pushButton_zrange">
      <property name="geometry">
