@@ -213,19 +213,6 @@
      </property>
      <layout class="QVBoxLayout" name="zhistlayoutch1"/>
     </widget>
-    <widget class="QPushButton" name="pushButton_smallROI">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>310</y>
-       <width>90</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Set Small ROI</string>
-     </property>
-    </widget>
     <widget class="QWidget" name="verticalLayoutWidget_4">
      <property name="geometry">
       <rect>
@@ -345,6 +332,32 @@
      </property>
      <property name="text">
       <string>save ROI Ch2</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="radioButton_circROI">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>310</y>
+       <width>82</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>circular ROI</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="radioButton_squareROI">
+     <property name="geometry">
+      <rect>
+       <x>120</x>
+       <y>310</y>
+       <width>82</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>square ROI</string>
      </property>
     </widget>
    </widget>

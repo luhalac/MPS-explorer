@@ -47,99 +47,43 @@ ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 class MPS_explorer(QtWidgets.QMainWindow):
     
     def __init__(self, *args, **kwargs):
-
         super().__init__(*args, **kwargs)
-        
-        
         self.ui = data_explorer.Ui_MainWindow()
         self.ui.setupUi(self)
         
-                
-        self.initialDir = r'Desktop'
+        # Define initial directory
+        self.initialDir = "Desktop"  # You can set the initial directory here
         
-        # open file Ch1
+        # File Formats
         fileformat_list = ["Picasso hdf5", "ThunderStorm csv", "custom csv"]
         self.fileformat = self.ui.comboBox_fileformat
         self.fileformat.addItems(fileformat_list)
-        
-        
-        self.browsefile = self.ui.pushButton_browsefile
-        self.browsefile.clicked.connect(self.select_file)
-        
-        # open file Ch2
-        fileformat_list2 = ["Picasso hdf5", "ThunderStorm csv", "custom csv"]
         self.fileformat_2 = self.ui.comboBox_fileformat_2
-        self.fileformat_2.addItems(fileformat_list2)
+        self.fileformat_2.addItems(fileformat_list)  # Reuse the same list for second channel
         
+        # Connect Buttons to Methods
+        self.ui.pushButton_browsefile.clicked.connect(self.select_file)
+        self.ui.pushButton_browsefile_2.clicked.connect(self.select_file2)
+        self.ui.pushButton_scatter.clicked.connect(self.scatterplot)
+        self.ui.pushButton_zrange.clicked.connect(self.update_ROI)
+        self.ui.pushButton_savexyzROI.clicked.connect(self.savexyzROI)
+        self.ui.pushButton_savexyzROI_2.clicked.connect(self.savexyzROI2)
+        self.ui.pushButton_savedistdata.clicked.connect(self.savedistdata)
+        self.ui.pushButton_DBSCAN.clicked.connect(self.cluster)
+        self.ui.pushButton_remove_bad_cluster.clicked.connect(self.dist_cm_good_clus)
+        self.ui.pushButton_savecluscenters.clicked.connect(self.save_clus_CM)
+        self.ui.pushButton_Distances.clicked.connect(self.KNdist_hist)
         
-        self.browsefile2 = self.ui.pushButton_browsefile_2
-        self.browsefile2.clicked.connect(self.select_file2)
-        
-        
-       
-        self.scatter = self.ui.pushButton_scatter
-        self.scatter.clicked.connect(self.scatterplot)
-        
-        
-        self.pushButton_smallROI = self.ui.pushButton_smallROI
-        self.pushButton_smallROI.clicked.connect(self.updateROIPlot)
-        
-        
-        # define zrange from zhist
-        
-        self.pushButton_zrange = self.ui.pushButton_zrange
-        self.pushButton_zrange.clicked.connect(self.updateROIPlot)
-        
-        # save XYZ ROI data
-        
-        self.pushButton_savexyzROI = self.ui.pushButton_savexyzROI
-        self.pushButton_savexyzROI.clicked.connect(self.savexyzROI)
-        
-        self.pushButton_savexyzROI_2 = self.ui.pushButton_savexyzROI_2
-        self.pushButton_savexyzROI_2.clicked.connect(self.savexyzROI2)
-        
-        # save Nneighbor distance data
-        
-        self.pushButton_savedistdata = self.ui.pushButton_savedistdata
-        self.pushButton_savedistdata.clicked.connect(self.savedistdata)
-        
-        # perform clustering analysis (DBSCAN)
-                
-        self.pushButton_DBSCAN = self.ui.pushButton_DBSCAN
-        self.pushButton_DBSCAN.clicked.connect(self.cluster_DBSCAN)
-        
-        # remove bad clusters
-                
-        self.pushButton_badclus = self.ui.pushButton_remove_bad_cluster
-        self.pushButton_badclus.clicked.connect(self.dist_cm_good_clus)
-        
-        # save clus CM xy data
-        
-        self.pushButton_CMclus = self.ui.pushButton_savecluscenters
-        self.pushButton_CMclus.clicked.connect(self.save_clus_CM)
-        
-        # calculate distances between cluster centers
-                
-        self.pushButton_Distances = self.ui.pushButton_Distances
-        self.pushButton_Distances.clicked.connect(self.KNdist_hist)
-        
-        
-        # lateral range and binning for fine tunning rel z hist
-        self.latmin = self.ui.lineEdit_latmin
-        self.latmax = self.ui.lineEdit_latmax
-        self.nbins = self.ui.lineEdit_bin
-        
-        self.latmin.textChanged.connect(self.latchange)
-        self.latmax.textChanged.connect(self.latchange)
-        self.nbins.textChanged.connect(self.latchange)
+        # Fine Tuning Parameters
+        self.ui.lineEdit_latmin.textChanged.connect(self.latchange)
+        self.ui.lineEdit_latmax.textChanged.connect(self.latchange)
+        self.ui.lineEdit_bin.textChanged.connect(self.latchange)
         
         self.lmin = 0
         self.lmax = 800
         self.bins = 30
         
-                
-        # define colors (color blind palette)
-              
+        # Colors
         self.brush1 = pg.mkBrush("#d55e00")
         self.brush2 = pg.mkBrush("#009e73")
         self.brush3 = pg.mkBrush("#0072b2")
@@ -147,9 +91,15 @@ class MPS_explorer(QtWidgets.QMainWindow):
         self.pen1 = pg.mkPen("#d55e00")
         self.pen2 = pg.mkPen("#009e73")
         self.pen3 = pg.mkPen("#0072b2")
-    
         
-        
+        # ROI Shape Radio Buttons
+        self.radioButton_circROI = self.ui.radioButton_circROI
+        self.radioButton_squareROI = self.ui.radioButton_squareROI
+        self.radioButton_circROI.clicked.connect(self.scatterplot)
+        self.radioButton_squareROI.clicked.connect(self.scatterplot)
+
+
+
     def select_file(self):
         try:
             root = Tk()
@@ -158,150 +108,68 @@ class MPS_explorer(QtWidgets.QMainWindow):
                                                       title = 'Select file')
             if root.filenamedata != '':
                 self.ui.lineEdit_filename.setText(root.filenamedata)
-                
+                # Obtener el formato del archivo seleccionado
+                self.fileformat1 = int(self.fileformat.currentIndex())
+                # Llamar a la función import_file
+                self.xdata, self.ydata, self.zdata = self.import_file(root.filenamedata, self.fileformat1)
         except OSError:
             pass
         
         if root.filenamedata == '':
             return
-        
+
     def select_file2(self):
         try:
             root = Tk()
             root.withdraw()
-            root.filenamedata = filedialog.askopenfilename(initialdir=self.initialDir,
+            root.filenamedata2 = filedialog.askopenfilename(initialdir=self.initialDir,
                                                       title = 'Select file')
-            if root.filenamedata != '':
-                self.ui.lineEdit_filename_2.setText(root.filenamedata)
-                
+            if root.filenamedata2 != '':
+                self.ui.lineEdit_filename_2.setText(root.filenamedata2)
+                # Obtener el formato del archivo seleccionado
+                self.fileformat2 = int(self.fileformat_2.currentIndex())
+                # Llamar a la función import_file
+                self.xdata2, self.ydata2, self.zdata2 = self.import_file(root.filenamedata2,  self.fileformat2)
         except OSError:
             pass
         
-        if root.filenamedata == '':
+        if root.filenamedata2 == '':
             return
-        
-    def import_file_ch1(self,filename1):
-        
-        self.fileformat1 = int(self.fileformat.currentIndex())
 
-        #File Importation Ch 1
-        if self.fileformat1 == 0: # Importation procedure for Picasso hdf5 files.
-
-            # Read H5 file
-            f = h5.File(filename1, "r")
+    
+    
+    def import_file(self, filename, fileformat):
+        if fileformat == 0: # Importation procedure for Picasso hdf5 files.
+            f = h5.File(filename, "r")
             dataset = f['locs']
-        
-            # Load  input HDF5 file
-            
             xdata = dataset['x'] 
             ydata = dataset['y'] 
             zdata = dataset['z'] 
-            
-            # define px size in nm
             self.pxsize = 133
-            
-            # Convert x,y values from 'camera subpixels' to nanometres
             xdata = xdata * self.pxsize
             ydata = ydata * self.pxsize
-            
-            
-            
-        elif self.fileformat1 == 1: # Importation procedure for ThunderSTORM csv files.
-            
-            ## Read ThunderSTRORM csv file
-            dataset = pd.read_csv(filename1)
-            # Extraxt headers names
+        elif fileformat == 1: # Importation procedure for ThunderSTORM csv files.
+            dataset = pd.read_csv(filename)
             headers = dataset.columns.values
-            
-            # data from different columns           
             xdata = dataset[headers[np.where(headers=='x [nm]')]].values.flatten() 
             ydata = dataset[headers[np.where(headers=='y [nm]')]].values.flatten()
             zdata = dataset[headers[np.where(headers=='z [nm]')]].values.flatten()
-    
-            
         else: # Importation procedure for custom csv files.
-
-            # Read custom csv file
-            dataset = pd.read_csv(filename1)
+            dataset = pd.read_csv(filename)
             data = pd.DataFrame(dataset)
             dataxyz = data.values
             dataxyz = dataxyz.astype(float)
-             
-            # data from different columns           
-
             xdata = dataxyz[:,0]
             ydata = dataxyz[:,1]
             zdata = dataxyz[:,2]
-
-            
         return xdata, ydata, zdata
-            
-            
-            
-    def import_file_ch2(self,filename2):
-        
-        self.fileformat2 = int(self.fileformat_2.currentIndex())
-            
-        #File Importation Ch 2
-        if self.fileformat2 == 0: # Importation procedure for Picasso hdf5 files.
-    
-            
-            # Read H5 file
-            f = h5.File(filename2, "r")
-            dataset = f['locs']
-        
-            # Load  input HDF5 file
-            
-            xdata2 = dataset['x'] 
-            ydata2 = dataset['y'] 
-            zdata2 = dataset['z'] 
-            
-            # define px size in nm
-            self.pxsize = 133
-            
-            # Convert x,y values from 'camera subpixels' to nanometres
-            xdata2 = xdata2 * self.pxsize
-            ydata2 = ydata2 * self.pxsize
-            
 
-        
-        
-        elif self.fileformat2 == 1: # Importation procedure for ThunderSTORM csv files.
-            
-            ## Read ThunderSTRORM csv file
-            dataset = pd.read_csv(filename2)
-            # Extraxt headers names
-            headers = dataset.columns.values
-            
-            # data from different columns           
-            xdata2 = dataset[headers[np.where(headers=='x [nm]')]].values.flatten() 
-            ydata2 = dataset[headers[np.where(headers=='y [nm]')]].values.flatten()
-            zdata2 = dataset[headers[np.where(headers=='z [nm]')]].values.flatten()
-    
-            
-        else: # Importation procedure for custom csv files.
 
-            # Read custom csv file
-            dataset = pd.read_csv(filename2)
-            data = pd.DataFrame(dataset)
-            dataxyz = data.values
-            dataxyz = dataxyz.astype(float)
-             
-            # data from different columns           
-
-            xdata2 = dataxyz[:,0]
-            ydata2 = dataxyz[:,1]
-            zdata2 = dataxyz[:,2]
-
-            
-        return xdata2, ydata2, zdata2
-
-    
     def scatterplot(self):  
         
         # Scatter plot data Ch1
         filename1 = self.ui.lineEdit_filename.text()
-        xdata, ydata, zdata  = self.import_file_ch1(filename1)
+        xdata, ydata, zdata  = self.import_file(filename1, self.fileformat1)
  
         self.x = xdata
         self.y = ydata
@@ -340,30 +208,38 @@ class MPS_explorer(QtWidgets.QMainWindow):
         
 
 
-        ROIpen = pg.mkPen(color='b')
-        # self.roi = pg.ROI(ROIpos, ROIextent, pen = ROIpen)  
+        ROIpen = pg.mkPen(color='r')
         
-        # self.roi.setZValue(10)
-        # self.roi.addScaleHandle([1, 1], [0, 0])
-        # self.roi.addRotateHandle([0, 0], [1, 1]) 
-        #plotxy.addItem(self.roi)               
+        
+        if self.ui.radioButton_circROI.isChecked():
+            
+            # Create circular ROI
+            self.circular_roi = pg.CircleROI(ROIpos, ROIextent, movable=True, pen = ROIpen)
+            self.circular_roi.handleColor = (255, 0, 0)  # Set handles color to red
+            self.circular_roi.addScaleHandle([1, 1], [0, 0])
+            self.circular_roi.setZValue(10)
+            # Add ROI to the scatterplot
+            plotxy.addItem(self.circular_roi)
+            # Connect signals
+            self.circular_roi.sigRegionChangeFinished.connect(self.update_ROI)
 
+            
+        elif self.ui.radioButton_squareROI.isChecked():
         
-        # Create circular ROI
-        self.circular_roi = pg.CircleROI(ROIpos, ROIextent, movable=True, pen = ROIpen)
-        self.circular_roi.addScaleHandle([1, 1], [0, 0])
-        self.circular_roi.setZValue(10)
-        
-        # Add ROI to the scatterplot
-        plotxy.addItem(self.circular_roi)
-        
-        
-        # Connect signals
-        self.circular_roi.sigRegionChangeFinished.connect(self.updateROIPlot)
+            # Create square ROI
+            self.square_roi = pg.ROI(ROIpos, ROIextent, pen = ROIpen)  
+            self.square_roi.setZValue(10)
+            self.square_roi.addScaleHandle([1, 1], [0, 0])
+            self.square_roi.addRotateHandle([0, 0], [1, 1]) 
+            # Add ROI to the scatterplot
+            plotxy.addItem( self.square_roi)   
+            # Connect signals
+            self.square_roi.sigRegionChangeFinished.connect(self.update_ROI)
+
+        else:
+            pass            
+
     
-        
-        
-                
 
         histzWidget = pg.GraphicsLayoutWidget()
         histabsz = histzWidget.addPlot(title="z Histogram Ch 1")
@@ -390,7 +266,7 @@ class MPS_explorer(QtWidgets.QMainWindow):
         
         else:
 
-            xdata2, ydata2, zdata2  = self.import_file_ch2(filename2)
+            xdata2, ydata2, zdata2  = self.import_file(filename2, self.fileformat2)
     
             self.x2 = xdata2
             self.y2 = ydata2
@@ -422,83 +298,110 @@ class MPS_explorer(QtWidgets.QMainWindow):
               
           
     
-    def updateROIPlot(self):
+    def update_ROI(self):
         
                         
         scatterWidgetROI = pg.GraphicsLayoutWidget()
         plotROI = scatterWidgetROI.addPlot(title="Scatter plot ROI selected")
         plotROI.setAspectLocked(True)
         
-        
+        if self.ui.radioButton_circROI.isChecked():
         # Get circular ROI position and size
-        pos = self.circular_roi.pos()
-        size = self.circular_roi.size()
-        
-        diameter = self.circular_roi.size()
-
-        # Calculate and return the radius (half of the diameter)
-        radius = diameter / 2
-       
-        # Calculate the center coordinates
-        center_x = pos.x() + size / 2
-        center_y = pos.y() + size / 2
-        
-        center = np.column_stack((center_x, center_y))
-        
-        
-        
-        # Iterate through data points and check if they are inside the circular ROI
-        points_inside_roi = []
-        for point in self.data_points:
-            if np.any(np.linalg.norm(point - center) <= radius):
-                points_inside_roi.append(point)
-        
-        # Convert list of points to numpy array
-        points_inside_roi = np.array(points_inside_roi)
-        
-        
-        
-        self.xroi = points_inside_roi[:,0]
-        self.yroi = points_inside_roi[:,1]
-        
-        
-        self.zroi = [self.z[i] for i, point in enumerate(self.data_points) if point in points_inside_roi]
-        
-        
-        # Define zmin and zmax
-        zmin = self.ui.lineEdit_zmin.text()
-        zmax = self.ui.lineEdit_zmax.text()
-        
-        # Convert zmin and zmax to numeric types if they are strings
-        if zmin == "":
-            self.zmin = None
-        else:    
-            self.zmin = float(zmin)
-        
-        if zmax == "":
-            self.zmax = None
-        else:    
-            self.zmax = float(zmax)
-        
-        
-        self.zroi = np.array(self.zroi)
-        # Define the z sectioning using zmin and zmax
-        if self.zmin is not None and self.zmax is not None:
-            z_roi_indices = np.where((self.zroi >= self.zmin) & (self.zroi <= self.zmax))[0]
-            self.zroi = self.zroi[z_roi_indices]
-        else:
-            # Keep all z values if zmin or zmax is not defined
-            pass
+            pos = self.circular_roi.pos()
+            size = self.circular_roi.size()
+            
+            diameter = self.circular_roi.size()
+    
+            # Calculate and return the radius (half of the diameter)
+            radius = diameter / 2
+           
+            # Calculate the center coordinates
+            center_x = pos.x() + size / 2
+            center_y = pos.y() + size / 2
+            
+            center = np.column_stack((center_x, center_y))
+            
+            
+            
+            # Iterate through data points and check if they are inside the circular ROI
+            points_inside_roi = []
+            for point in self.data_points:
+                if np.any(np.linalg.norm(point - center) <= radius):
+                    points_inside_roi.append(point)
+            
+            # Convert list of points to numpy array
+            points_inside_roi = np.array(points_inside_roi)
+            
+            
+            
+            self.xroi = points_inside_roi[:,0]
+            self.yroi = points_inside_roi[:,1]
+            
+            
+            self.zroi = [self.z[i] for i, point in enumerate(self.data_points) if point in points_inside_roi]
+            
+            
+            # Define zmin and zmax
+            zmin = self.ui.lineEdit_zmin.text()
+            zmax = self.ui.lineEdit_zmax.text()
+            
+            # Convert zmin and zmax to numeric types if they are strings
+            if zmin == "":
+                self.zmin = None
+            else:    
+                self.zmin = float(zmin)
+            
+            if zmax == "":
+                self.zmax = None
+            else:    
+                self.zmax = float(zmax)
+            
+            
+            self.zroi = np.array(self.zroi)
+            # Define the z sectioning using zmin and zmax
+            if self.zmin is not None and self.zmax is not None:
+                z_roi_indices = np.where((self.zroi >= self.zmin) & (self.zroi <= self.zmax))[0]
+                self.zroi = self.zroi[z_roi_indices]
+            else:
+                # Keep all z values if zmin or zmax is not defined
+                pass
   
+        elif self.ui.radioButton_squareROI.isChecked():
+            
+            # get square ROI position and size
+            xmin, ymin = self.square_roi.pos()
+            xmax, ymax = self.square_roi.pos() + self.square_roi.size()
         
+            indx = np.where((self.x > xmin) & (self.x < xmax))
+            indy = np.where((self.y > ymin) & (self.y < ymax))
+            mask = np.in1d(indx, indy)
+            ind = np.nonzero(mask)
+            index = indx[0][ind[0]]
+            self.xroi = self.x[index]
+            self.yroi = self.y[index]
+        
+        
+            zmin = self.ui.lineEdit_zmin.text()
+            zmax = self.ui.lineEdit_zmax.text()
+        
+            self.zmin = int(zmin) if zmin else None
+            self.zmax = int(zmax) if zmax else None
+        
+            if self.zmax is None:
+                self.zroi = self.z[index]
+            else:
+                zroi = self.z[index]
+                indz = np.where((zroi > self.zmin) & (zroi < self.zmax))
+                self.zroi = zroi[indz]
+                self.xroi = self.xroi[indz]
+                self.yroi = self.yroi[indz]
+          
+                
     
         self.selected = pg.ScatterPlotItem(self.xroi, self.yroi, pen = self.pen1,
                                            brush = None, size = 5)  
         plotROI.setLabels(bottom=('x [nm]'), left=('y [nm]'))
         plotROI.setXRange(np.min(self.xroi), np.max(self.xroi), padding=0)
-
-        
-        
         plotROI.addItem(self.selected)
         
         
@@ -521,6 +424,7 @@ class MPS_explorer(QtWidgets.QMainWindow):
         self.empty_layout(self.ui.zhistlayout_2)
         self.ui.zhistlayout_2.addWidget(histzWidget2)
         
+           
 
     def savexyzROI(self):
         
@@ -563,7 +467,7 @@ class MPS_explorer(QtWidgets.QMainWindow):
         #export dist array to CSV file (using 2 decimal places)
         np.savetxt(dataNamecsv, dist, delimiter=",", fmt="%.2f")
 
-    def cluster_DBSCAN(self):
+    def cluster(self):
         
         
         self.badclusterslist = []
