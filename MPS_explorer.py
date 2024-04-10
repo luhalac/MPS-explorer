@@ -33,8 +33,7 @@ pg.setConfigOption('foreground', 'k')
 from pyqtgraph.Qt import QtCore, QtGui
 from PyQt5.QtCore import pyqtSignal, pyqtSlot
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QFileDialog
-from PyQt5.QtWidgets import QMainWindow, QApplication
+
 import data_explorer
 
 
@@ -63,15 +62,14 @@ class MPS_explorer(QtWidgets.QMainWindow):
         self.fileformat_2.addItems(fileformat_list)  # Reuse the same list for second channel
         
         # Connect Buttons to Methods
-        self.ui.pushButton_browsefile.clicked.connect(lambda:self.select_file(1))
-        self.ui.pushButton_browsefile_2.clicked.connect(lambda:self.select_file(2))
+        self.ui.pushButton_browsefile.clicked.connect(self.select_file)
+        self.ui.pushButton_browsefile_2.clicked.connect(self.select_file2)
         self.ui.pushButton_scatter.clicked.connect(self.scatterplot)
         self.ui.pushButton_zrange.clicked.connect(self.update_ROI)
-        self.ui.pushButton_savexyzROI.clicked.connect(lambda: self.savexyzROI(1))
-        self.ui.pushButton_savexyzROI_2.clicked.connect(lambda: self.savexyzROI(2))
+        self.ui.pushButton_savexyzROI.clicked.connect(self.savexyzROI)
+        self.ui.pushButton_savexyzROI_2.clicked.connect(self.savexyzROI2)
         self.ui.pushButton_savedistdata.clicked.connect(self.savedistdata)
-        self.ui.pushButton_clusterch1.clicked.connect(lambda:self.cluster(1))
-        self.ui.pushButton_clusterch2.clicked.connect(lambda:self.cluster(2))
+        self.ui.pushButton_DBSCAN.clicked.connect(self.cluster)
         self.ui.pushButton_remove_bad_cluster.clicked.connect(self.dist_cm_good_clus)
         self.ui.pushButton_savecluscenters.clicked.connect(self.save_clus_CM)
         self.ui.pushButton_Distances.clicked.connect(self.KNdist_hist)
@@ -99,41 +97,48 @@ class MPS_explorer(QtWidgets.QMainWindow):
         self.radioButton_squareROI = self.ui.radioButton_squareROI
         self.radioButton_circROI.clicked.connect(self.scatterplot)
         self.radioButton_squareROI.clicked.connect(self.scatterplot)
-        
-        
-        # Connect the close event to your method
-        self.closeEvent = self.onCloseEvent
 
-    def select_file(self, channel):
+
+
+    def select_file(self):
         try:
             root = Tk()
             root.withdraw()
-            if channel == 1:
-                root.filenamedata = filedialog.askopenfilename(initialdir=self.initialDir,
-                                                               title='Select file')
-                if root.filenamedata != '':
-                    self.ui.lineEdit_filename.setText(root.filenamedata)
-                    self.fileformat1 = int(self.fileformat.currentIndex())
-                    self.xdata, self.ydata, self.zdata = self.import_file(root.filenamedata, self.fileformat1)
-            elif channel == 2:
-                root.filenamedata2 = filedialog.askopenfilename(initialdir=self.initialDir,
-                                                                title='Select file')
-                if root.filenamedata2 != '':
-                    self.ui.lineEdit_filename_2.setText(root.filenamedata2)
-                    self.fileformat2 = int(self.fileformat_2.currentIndex())
-                    self.xdata2, self.ydata2, self.zdata2 = self.import_file(root.filenamedata2, self.fileformat2)
+            root.filenamedata = filedialog.askopenfilename(initialdir=self.initialDir,
+                                                      title = 'Select file')
+            if root.filenamedata != '':
+                self.ui.lineEdit_filename.setText(root.filenamedata)
+                # Obtener el formato del archivo seleccionado
+                self.fileformat1 = int(self.fileformat.currentIndex())
+                # Llamar a la función import_file
+                self.xdata, self.ydata, self.zdata = self.import_file(root.filenamedata, self.fileformat1)
         except OSError:
             pass
-        finally:
-            if channel == 1 and root.filenamedata == '':
-                return
-            elif channel == 2 and root.filenamedata2 == '':
-                return
+        
+        if root.filenamedata == '':
+            return
 
-   
+    def select_file2(self):
+        try:
+            root = Tk()
+            root.withdraw()
+            root.filenamedata2 = filedialog.askopenfilename(initialdir=self.initialDir,
+                                                      title = 'Select file')
+            if root.filenamedata2 != '':
+                self.ui.lineEdit_filename_2.setText(root.filenamedata2)
+                # Obtener el formato del archivo seleccionado
+                self.fileformat2 = int(self.fileformat_2.currentIndex())
+                # Llamar a la función import_file
+                self.xdata2, self.ydata2, self.zdata2 = self.import_file(root.filenamedata2,  self.fileformat2)
+        except OSError:
+            pass
+        
+        if root.filenamedata2 == '':
+            return
+
+    
     
     def import_file(self, filename, fileformat):
-        
         if fileformat == 0: # Importation procedure for Picasso hdf5 files.
             f = h5.File(filename, "r")
             dataset = f['locs']
@@ -267,7 +272,6 @@ class MPS_explorer(QtWidgets.QMainWindow):
             self.y2 = ydata2
             self.z2 = zdata2 
     
-            self.data_points2 = np.column_stack((self.x2, self.y2))        
     
             xy2 = pg.ScatterPlotItem(self.x2, self.y2, pen=None,
                                     brush=self.brush2, size=1)
@@ -292,19 +296,21 @@ class MPS_explorer(QtWidgets.QMainWindow):
             self.ui.zhistlayoutch2.addWidget(histzch2Widget)
      
               
+          
     
     def update_ROI(self):
         
+                        
         scatterWidgetROI = pg.GraphicsLayoutWidget()
         plotROI = scatterWidgetROI.addPlot(title="Scatter plot ROI selected")
         plotROI.setAspectLocked(True)
         
         if self.ui.radioButton_circROI.isChecked():
-            
-            # Get circular ROI position and size
+        # Get circular ROI position and size
             pos = self.circular_roi.pos()
             size = self.circular_roi.size()
-            diameter = 1.3*(self.circular_roi.size())
+            
+            diameter = self.circular_roi.size()
     
             # Calculate and return the radius (half of the diameter)
             radius = diameter / 2
@@ -312,41 +318,53 @@ class MPS_explorer(QtWidgets.QMainWindow):
             # Calculate the center coordinates
             center_x = pos.x() + size / 2
             center_y = pos.y() + size / 2
+            
             center = np.column_stack((center_x, center_y))
+            
+            
             
             # Iterate through data points and check if they are inside the circular ROI
             points_inside_roi = []
-            ind_inside_roi = []
-            for idx,point in enumerate(self.data_points):
+            for point in self.data_points:
                 if np.any(np.linalg.norm(point - center) <= radius):
                     points_inside_roi.append(point)
-                    ind_inside_roi.append(idx)
             
             # Convert list of points to numpy array
             points_inside_roi = np.array(points_inside_roi)
             
+            
+            
             self.xroi = points_inside_roi[:,0]
             self.yroi = points_inside_roi[:,1]
-                     
+            
+            
+            self.zroi = [self.z[i] for i, point in enumerate(self.data_points) if point in points_inside_roi]
+            
             
             # Define zmin and zmax
             zmin = self.ui.lineEdit_zmin.text()
             zmax = self.ui.lineEdit_zmax.text()
             
             # Convert zmin and zmax to numeric types if they are strings
-            self.zmin = int(zmin) if zmin else None
-            self.zmax = int(zmax) if zmax else None
+            if zmin == "":
+                self.zmin = None
+            else:    
+                self.zmin = float(zmin)
             
-            if self.zmax is None:
-                self.zroi = self.z[ind_inside_roi]
+            if zmax == "":
+                self.zmax = None
+            else:    
+                self.zmax = float(zmax)
+            
+            
+            self.zroi = np.array(self.zroi)
+            # Define the z sectioning using zmin and zmax
+            if self.zmin is not None and self.zmax is not None:
+                z_roi_indices = np.where((self.zroi >= self.zmin) & (self.zroi <= self.zmax))[0]
+                self.zroi = self.zroi[z_roi_indices]
             else:
-                zroi = self.z[ind_inside_roi]
-                indz = np.where((zroi > self.zmin) & (zroi < self.zmax))
-                self.zroi = zroi[indz]
-                self.xroi = self.xroi[indz]
-                self.yroi = self.yroi[indz]
-            
-            
+                # Keep all z values if zmin or zmax is not defined
+                pass
   
         elif self.ui.radioButton_squareROI.isChecked():
             
@@ -379,6 +397,7 @@ class MPS_explorer(QtWidgets.QMainWindow):
                 self.yroi = self.yroi[indz]
           
                 
+    
         self.selected = pg.ScatterPlotItem(self.xroi, self.yroi, pen = self.pen1,
                                            brush = None, size = 5)  
         plotROI.setLabels(bottom=('x [nm]'), left=('y [nm]'))
@@ -401,164 +420,39 @@ class MPS_explorer(QtWidgets.QMainWindow):
         bargraphz2.setOpacity(0.5) 
         histabsz2.addItem(bargraphz2)
         
-        filename2 = self.ui.lineEdit_filename_2.text()
-        
-        if filename2 == '':
-            
-            
-            pass
-        
-        else:
-            
-            if self.ui.radioButton_circROI.isChecked():
-                
-                # Get circular ROI position and size
-                pos = self.circular_roi.pos()
-                size = self.circular_roi.size()
-                diameter = 1.3*(self.circular_roi.size())
-        
-                # Calculate and return the radius (half of the diameter)
-                radius = diameter / 2
-               
-                # Calculate the center coordinates
-                center_x = pos.x() + size / 2
-                center_y = pos.y() + size / 2
-                center = np.column_stack((center_x, center_y))
-                
-                # Iterate through data points and check if they are inside the circular ROI
-                points_inside_roi2 = []
-                ind_inside_roi2 = []
-                for idx,point in enumerate(self.data_points2):
-                    if np.any(np.linalg.norm(point - center) <= radius):
-                        points_inside_roi2.append(point)
-                        ind_inside_roi2.append(idx)
-                
-                # Convert list of points to numpy array
-                points_inside_roi2 = np.array(points_inside_roi2)
-                
-                self.xroi2 = points_inside_roi2[:,0]
-                self.yroi2 = points_inside_roi2[:,1]
-                         
-                
-                # Define zmin and zmax
-                zmin = self.ui.lineEdit_zmin.text()
-                zmax = self.ui.lineEdit_zmax.text()
-                
-                # Convert zmin and zmax to numeric types if they are strings
-                self.zmin = int(zmin) if zmin else None
-                self.zmax = int(zmax) if zmax else None
-                
-                if self.zmax is None:
-                    self.zroi2 = self.z2[ind_inside_roi2]
-                else:
-                    zroi = self.z2[ind_inside_roi2]
-                    indz = np.where((zroi > self.zmin) & (zroi < self.zmax))
-                    self.zroi2 = zroi[indz]
-                    self.xroi2 = self.xroi2[indz]
-                    self.yroi2 = self.yroi2[indz]
-                
-                
-      
-            elif self.ui.radioButton_squareROI.isChecked():
-                
-                # get square ROI position and size
-                xmin, ymin = self.square_roi.pos()
-                xmax, ymax = self.square_roi.pos() + self.square_roi.size()
-            
-                indx = np.where((self.x2 > xmin) & (self.x2 < xmax))
-                indy = np.where((self.y2 > ymin) & (self.y2 < ymax))
-                mask = np.in1d(indx, indy)
-                ind = np.nonzero(mask)
-                index = indx[0][ind[0]]
-                self.xroi2 = self.x2[index]
-                self.yroi2 = self.y2[index]
-            
-            
-                zmin = self.ui.lineEdit_zmin.text()
-                zmax = self.ui.lineEdit_zmax.text()
-            
-                self.zmin = int(zmin) if zmin else None
-                self.zmax = int(zmax) if zmax else None
-            
-                if self.zmax is None:
-                    self.zroi2 = self.z2[index]
-                else:
-                    zroi = self.z[index]
-                    indz = np.where((zroi > self.zmin) & (zroi < self.zmax))
-                    self.zroi2 = zroi[indz]
-                    self.xroi2 = self.xroi[indz]
-                    self.yroi2 = self.yroi[indz]
-              
-                    
-            self.selected2 = pg.ScatterPlotItem(self.xroi2, self.yroi2, pen = self.pen2,
-                                               brush = None, size = 3)  
-            plotROI.setLabels(bottom=('x [nm]'), left=('y [nm]'))
-            plotROI.setXRange(np.min(self.xroi2), np.max(self.xroi2), padding=0)
-            plotROI.addItem(self.selected2)
-            
-            
-            self.empty_layout(self.ui.scatterlayout_3)
-            self.ui.scatterlayout_3.addWidget(scatterWidgetROI)    
-
-            
-            histz2, bin_edgesz2 = np.histogram(self.zroi2, bins='auto')
-            widthzabs2 = np.mean(np.diff(bin_edgesz2))
-            bincentersz2 = np.mean(np.vstack([bin_edgesz2[0:-1],bin_edgesz2[1:]]), axis=0)
-            bargraphz22 = pg.BarGraphItem(x = bincentersz2, height = histz2, 
-                                        width = widthzabs2, brush = self.brush2, pen = self.pen2)
-            bargraphz22.setOpacity(0.5) 
-            histabsz2.addItem(bargraphz22)
-        
                 
         self.empty_layout(self.ui.zhistlayout_2)
         self.ui.zhistlayout_2.addWidget(histzWidget2)
         
-    # def savexyzROI(self, channel):
-        
-    #     if channel == 1:
-    #         xyzROI = np.array([self.xroi, self.yroi, self.zroi])
-    #         filename = self.ui.lineEdit_filename.text()
-    #     elif channel == 2:
-    #         xyzROI = np.array([self.xroi2, self.yroi2, self.zroi2])
-    #         filename = self.ui.lineEdit_filename_2.text()
-    #     else:
-    #         raise ValueError("Invalid channel number")
-        
-    #     xyzROI = np.transpose(xyzROI)
-    #     filename = os.path.splitext(filename)[0]
-    #     dataNamecsv = utils.insertSuffix(filename, f'_xyzROICh{channel}.csv')
-        
-    #     # Export array to CSV file (using 2 decimal places)
-    #     np.savetxt(dataNamecsv, xyzROI, delimiter=",", fmt="%.2f", header="x, y, z", comments="")       
+           
 
-     
-
-    def savexyzROI(self, channel):
+    def savexyzROI(self):
         
-        # Suggest a default filename
+        xyzROI = np.array([self.xroi,self.yroi,self.zroi])
+        xyzROI = np.transpose(xyzROI)
+        
         filename = self.ui.lineEdit_filename.text()
         filename = os.path.splitext(filename)[0]
-        default_filename = utils.insertSuffix(filename, f'_xyzROICh{channel}.csv')
-        # Open a file dialog to choose the location and name of the file
-        file_dialog = QFileDialog()
-        filename, _ = file_dialog.getSaveFileName(caption="Save ROI Data", directory=".", filter="CSV Files (*.csv)", initialFilter=default_filename)
+        dataNamecsv = utils.insertSuffix(filename, '_xyzROICh1.csv')
+        
+        #export array to CSV file (using 2 decimal places)
+        np.savetxt(dataNamecsv, xyzROI, delimiter=",", fmt="%.2f",header="x, y, z", comments="")
+
+        
+        
+    def savexyzROI2(self):
     
-        if filename:
-            if channel == 1:
-                xyzROI = np.array([self.xroi, self.yroi, self.zroi])
-            elif channel == 2:
-                xyzROI = np.array([self.xroi2, self.yroi2, self.zroi2])
-            else:
-                raise ValueError("Invalid channel number")
-            
-            xyzROI = np.transpose(xyzROI)
-            filename = os.path.splitext(filename)[0]
-            dataNamecsv = f'{filename}_xyzROICh{channel}.csv'
-            
-            # Export array to CSV file (using 2 decimal places)
-            np.savetxt(dataNamecsv, xyzROI, delimiter=",", fmt="%.2f", header="x, y, z", comments="")
-            
-            
+        xyzROI2 = np.array([self.xroi2,self.yroi2,self.zroi2])
+        xyzROI2 = np.transpose(xyzROI2)
+        
+        filename2 = self.ui.lineEdit_filename_2.text()
+        filename2 = os.path.splitext(filename2)[0]
+        dataNamecsv = utils.insertSuffix(filename2, '_xyzROICh2.csv')
+
+        
+        #export array to CSV file (using 2 decimal places)
+        np.savetxt(dataNamecsv, xyzROI2, delimiter=",", fmt="%.2f",header="x, y, z", comments="")
+        
     
     def savedistdata(self):
         
@@ -572,88 +466,87 @@ class MPS_explorer(QtWidgets.QMainWindow):
         
         #export dist array to CSV file (using 2 decimal places)
         np.savetxt(dataNamecsv, dist, delimiter=",", fmt="%.2f")
+
+    def cluster(self):
         
         
-    def cluster(self, channel):
-        
+        self.badclusterslist = []
         self.indbc = []
-        
-        if channel == 1:
-            x_roi = self.xroi
-            y_roi = self.yroi
-            brushch = self.brush1
-            pench = self.pen1
-            scatter_layout_cluster = self.ui.scatterlayout_clusterch1
-            self.minsamples = float(self.ui.lineEdit_minsamples.text())
-            self.eps = float(self.ui.lineEdit_eps.text())
-        elif channel == 2:
-            x_roi = self.xroi2
-            y_roi = self.yroi2
-            brushch = self.brush2
-            pench = self.pen2
-            scatter_layout_cluster = self.ui.scatterlayout_clusterch2
-            self.minsamples = float(self.ui.lineEdit_minsamples_2.text())
-            self.eps = float(self.ui.lineEdit_eps_2.text())
-        else:
-            return  # Skip invalid channels
-        
-        # XY locs in ROI
-        XY = np.column_stack((x_roi, y_roi))
-        
-        # DBSCAN parameters
-        self.minsamples = float(self.ui.lineEdit_minsamples.text())
-        min_samples = int(self.minsamples)
-        
-        self.eps = float(self.ui.lineEdit_eps.text())
-        eps = int(self.eps)
-        
-        # DBSCAN clustering
-        db = DBSCAN(eps=eps, min_samples=min_samples).fit(XY) 
-        dblabels = db.labels_
-        
-        # Get unique cluster labels
-        unique_labels = np.unique(dblabels)
-        
-        # Plot clusters
-        scatterWidgetcluster = pg.GraphicsLayoutWidget()
-        plotclusters = scatterWidgetcluster.addPlot(title="Clustered data")
-        plotclusters.setAspectLocked(True)
-        plotclusters.setLabels(bottom=('x [nm]'), left=('y [nm]'))
-        plotclusters.setXRange(np.min(x_roi), np.max(x_roi), padding=0)
-        
-        for label in unique_labels:
-            if label == -1:
-                # Skip noise points
-                continue
-            
-            # Get points belonging to the current cluster label
-            cluster_points = XY[dblabels == label]
-            
-            # Plot cluster points
-            cluster_plot = pg.ScatterPlotItem(cluster_points[:, 0], cluster_points[:, 1], 
-                                               pen=pench, brush=pg.mkBrush(None), size=10)
-            plotclusters.addItem(cluster_plot)
-        
-        # Plot cluster centers
-        cm_list = []
-        for label in unique_labels:
-            if label == -1:
-                continue
-            cluster_points = XY[dblabels == label]
-            cm_list.append(np.mean(cluster_points, axis=0))
-        
-        cms = np.array(cm_list)
-        self.cms = np.around(cms, decimals=2)
 
         
-        self.selectedcluscm = pg.ScatterPlotItem(self.cms[:, 0], self.cms[:, 1], size=10, pen=pg.mkPen('k'), brush=brushch)
-        plotclusters.addItem(self.selectedcluscm)
-        self.gcms = []
-        self.selectedcluscm.sigClicked.connect(self.rx)
+        # locs in ROI
+        # XYZ = np.column_stack((self.xroi, self.yroi, self.zroi))
         
-        # Add the plot to the UI
-        self.empty_layout(scatter_layout_cluster)
-        scatter_layout_cluster.addWidget(scatterWidgetcluster)
+        # XY locs in ROI
+        XYZ = np.column_stack((self.xroi, self.yroi))
+               
+        # DBSCAN parameters
+        # self.eps = float(self.ui.lineEdit_eps.text())
+        # eps = int(self.eps)
+        
+        
+        self.minsamples = float(self.ui.lineEdit_minsamples.text())
+        
+        min_samples = int(self.minsamples)
+        
+
+        # DBSCAN without previous filtering
+        # db = DBSCAN(eps = 30, min_samples = min_samples).fit(XYZ) 
+        # dblabels = db.labels_
+        
+        db = hdbscan.HDBSCAN(min_cluster_size=min_samples, gen_min_span_tree=True).fit(XYZ)
+        dblabels = db.labels_
+        
+        cm_list = [] 
+       
+        for i in range(np.max(dblabels)):
+            idx = np.where(dblabels==i)
+            x_i = self.xroi[idx]
+            y_i = self.yroi[idx]
+            # z_i = self.zroi[idx]
+            cm_list.append(np.array([np.mean(x_i),np.mean(y_i)]))
+        
+   
+        range_max = len(XYZ)
+        Xc = np.array([XYZ[i] for i in range(0, range_max) if dblabels[i] != -1])
+        
+        self.cms = np.array(cm_list)
+        self.cms = np.around(self.cms, decimals=2)
+
+ 
+        scatterWidgetDBSCAN = pg.GraphicsLayoutWidget()
+        plotclusters = scatterWidgetDBSCAN.addPlot(title="Clustered data")
+        plotclusters.setAspectLocked(True)
+
+        self.selecteddata = pg.ScatterPlotItem(XYZ[:,0], XYZ[:,1], size=2, brush = self.brush1)  
+        self.selectedcluscm = pg.ScatterPlotItem(self.cms[:,0], self.cms[:,1], size=10, brush = self.brush3)  
+        self.selectedclus = pg.ScatterPlotItem(Xc[:,0], Xc[:,1], pen=self.pen1,brush=pg.mkBrush(None), size=10) 
+        
+        plotclusters.setLabels(bottom=('x [nm]'), left=('y [nm]'))
+        plotclusters.setXRange(np.min(self.xroi), np.max(self.xroi), padding=0)
+        
+        plotclusters.addItem(self.selecteddata)
+        plotclusters.addItem(self.selectedclus)
+        plotclusters.addItem(self.selectedcluscm)
+        
+        self.empty_layout(self.ui.scatterlayout_dbscan)
+        self.ui.scatterlayout_dbscan.addWidget(scatterWidgetDBSCAN) 
+        
+        scatterWidgetDBSCAN_cmdist = pg.GraphicsLayoutWidget()
+        plotdistcmd = scatterWidgetDBSCAN_cmdist.addPlot(title="Clusters centers and distances")
+        plotdistcmd.setAspectLocked(True)
+
+        self.selectedcluscmd = pg.ScatterPlotItem(self.cms[:,0], self.cms[:,1], size=10, brush = self.brush3)  
+        plotdistcmd.setLabels(bottom=('x [nm]'), left=('y [nm]'))
+        plotdistcmd.setXRange(np.min(self.xroi), np.max(self.xroi), padding=0)
+        self.gcms = []
+        self.selectedcluscmd.sigClicked.connect(self.rx)
+        
+        plotdistcmd.addItem(self.selectedcluscmd)
+        
+        self.empty_layout(self.ui.scatterlayout_histcmdist)
+        self.ui.scatterlayout_histcmdist.addWidget(scatterWidgetDBSCAN_cmdist) 
+     
 
  
     def rx(self, obj, points):
@@ -787,15 +680,13 @@ class MPS_explorer(QtWidgets.QMainWindow):
         self.empty_layout(self.ui.scatterlayout_histcmdist)
         self.ui.scatterlayout_histcmdist.addWidget(scatterWidgetDBSCAN_cmdist) 
         
-                
+        
+
+    
+        
     def empty_layout(self, layout):
         for i in reversed(range(layout.count())): 
             layout.itemAt(i).widget().setParent(None)
-            
-            
-    def onCloseEvent(self, event):
-        # Stop the entire process and close the application
-        QApplication.quit()
     
 if __name__ == '__main__':
     

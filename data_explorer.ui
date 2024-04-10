@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1391</width>
-    <height>871</height>
+    <width>1414</width>
+    <height>735</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -366,12 +366,12 @@
      <rect>
       <x>710</x>
       <y>0</y>
-      <width>671</width>
+      <width>651</width>
       <height>701</height>
      </rect>
     </property>
     <property name="title">
-     <string>Clustering</string>
+     <string>Clustering (HDBSCAN)</string>
     </property>
     <widget class="QWidget" name="verticalLayoutWidget_9">
      <property name="geometry">
@@ -382,7 +382,7 @@
        <height>271</height>
       </rect>
      </property>
-     <layout class="QVBoxLayout" name="scatterlayout_clusterch1"/>
+     <layout class="QVBoxLayout" name="scatterlayout_dbscan"/>
     </widget>
     <widget class="QLineEdit" name="lineEdit_minsamples">
      <property name="geometry">
@@ -400,17 +400,17 @@
       <bool>false</bool>
      </property>
     </widget>
-    <widget class="QPushButton" name="pushButton_clusterch1">
+    <widget class="QPushButton" name="pushButton_DBSCAN">
      <property name="geometry">
       <rect>
-       <x>180</x>
+       <x>140</x>
        <y>40</y>
        <width>81</width>
        <height>31</height>
       </rect>
      </property>
      <property name="text">
-      <string>cluster Ch1</string>
+      <string>cluster</string>
      </property>
     </widget>
     <widget class="QLabel" name="label_minsamples">
@@ -418,12 +418,12 @@
       <rect>
        <x>20</x>
        <y>30</y>
-       <width>51</width>
+       <width>111</width>
        <height>16</height>
       </rect>
      </property>
      <property name="text">
-      <string>Min Pts</string>
+      <string>Min points per cluster</string>
      </property>
     </widget>
     <widget class="QLineEdit" name="lineEdit_Nneighbor">
@@ -442,7 +442,7 @@
       <bool>false</bool>
      </property>
     </widget>
-    <widget class="QLabel" name="label_Nneighbor">
+    <widget class="QLabel" name="label_eps_2">
      <property name="geometry">
       <rect>
        <x>30</x>
@@ -458,8 +458,8 @@
     <widget class="QPushButton" name="pushButton_Distances">
      <property name="geometry">
       <rect>
-       <x>360</x>
-       <y>660</y>
+       <x>120</x>
+       <y>380</y>
        <width>81</width>
        <height>31</height>
       </rect>
@@ -471,13 +471,13 @@
     <widget class="QWidget" name="verticalLayoutWidget_11">
      <property name="geometry">
       <rect>
-       <x>350</x>
+       <x>360</x>
        <y>90</y>
-       <width>311</width>
-       <height>271</height>
+       <width>281</width>
+       <height>261</height>
       </rect>
      </property>
-     <layout class="QVBoxLayout" name="scatterlayout_clusterch2"/>
+     <layout class="QVBoxLayout" name="scatterlayout_histcmdist"/>
     </widget>
     <widget class="QWidget" name="verticalLayoutWidget_5">
      <property name="geometry">
@@ -562,8 +562,8 @@
     <widget class="QPushButton" name="pushButton_remove_bad_cluster">
      <property name="geometry">
       <rect>
-       <x>230</x>
-       <y>380</y>
+       <x>360</x>
+       <y>40</y>
        <width>101</width>
        <height>31</height>
       </rect>
@@ -586,8 +586,8 @@
     <widget class="QPushButton" name="pushButton_savedistdata">
      <property name="geometry">
       <rect>
-       <x>440</x>
-       <y>660</y>
+       <x>220</x>
+       <y>380</y>
        <width>101</width>
        <height>31</height>
       </rect>
@@ -599,114 +599,14 @@
     <widget class="QPushButton" name="pushButton_savecluscenters">
      <property name="geometry">
       <rect>
-       <x>100</x>
-       <y>380</y>
+       <x>480</x>
+       <y>40</y>
        <width>121</width>
        <height>31</height>
       </rect>
      </property>
      <property name="text">
       <string>save clusters centers</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="pushButton_clusterch2">
-     <property name="geometry">
-      <rect>
-       <x>570</x>
-       <y>40</y>
-       <width>81</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>cluster Ch2</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_eps">
-     <property name="geometry">
-      <rect>
-       <x>100</x>
-       <y>30</y>
-       <width>51</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Epsilon</string>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="lineEdit_eps">
-     <property name="geometry">
-      <rect>
-       <x>100</x>
-       <y>50</y>
-       <width>61</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>10</string>
-     </property>
-     <property name="clearButtonEnabled">
-      <bool>false</bool>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_eps_2">
-     <property name="geometry">
-      <rect>
-       <x>440</x>
-       <y>30</y>
-       <width>51</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Epsilon</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_minsamples_2">
-     <property name="geometry">
-      <rect>
-       <x>360</x>
-       <y>30</y>
-       <width>51</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Min Pts</string>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="lineEdit_minsamples_2">
-     <property name="geometry">
-      <rect>
-       <x>360</x>
-       <y>50</y>
-       <width>61</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>10</string>
-     </property>
-     <property name="clearButtonEnabled">
-      <bool>false</bool>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="lineEdit_eps_2">
-     <property name="geometry">
-      <rect>
-       <x>440</x>
-       <y>50</y>
-       <width>61</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>10</string>
-     </property>
-     <property name="clearButtonEnabled">
-      <bool>false</bool>
      </property>
     </widget>
    </widget>
@@ -716,7 +616,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1391</width>
+     <width>1414</width>
      <height>21</height>
     </rect>
    </property>
