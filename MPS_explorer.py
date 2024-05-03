@@ -377,7 +377,28 @@ class MPS_explorer(QtWidgets.QMainWindow):
                 self.zroi = zroi[indz]
                 self.xroi = self.xroi[indz]
                 self.yroi = self.yroi[indz]
-          
+        
+        else:
+            
+            self.xroi = self.x
+            self.yroi = self.y
+            
+            zmin = self.ui.lineEdit_zmin.text()
+            zmax = self.ui.lineEdit_zmax.text()
+        
+            self.zmin = int(zmin) if zmin else None
+            self.zmax = int(zmax) if zmax else None
+        
+            if self.zmax is None:
+                self.zroi = self.z
+            else:
+                zroi = self.z
+                indz = np.where((zroi > self.zmin) & (zroi < self.zmax))
+                self.zroi = zroi[indz]
+                self.xroi = self.xroi[indz]
+                self.yroi = self.yroi[indz]
+            
+            
                 
         self.selected = pg.ScatterPlotItem(self.xroi, self.yroi, pen = self.pen1,
                                            brush = None, size = 5)  
@@ -713,8 +734,7 @@ class MPS_explorer(QtWidgets.QMainWindow):
         self.bins = int(self.nbins.text())
         self.lmin = float(self.latmin.text())
         self.lmax = float(self.latmax.text())
-        
-        print(self.lmax)
+    
         
       
         self.KNdist_hist()
@@ -724,7 +744,8 @@ class MPS_explorer(QtWidgets.QMainWindow):
         # compute distances to nearest neighbors (cm of the clusters obtained with DBSCAN)
         self.Nneighbor = float(self.ui.lineEdit_Nneighbor.text())
         Nneighbor = int(self.Nneighbor)
-
+        print(Nneighbor)
+        
         tree = KDTree(self.gcms)
         distances, indexes = tree.query(self.gcms, Nneighbor+1) 
         self.distances = distances[:,1:] # exclude distance to the same molecule; distances has N rows (#clusters) and M columns (# neighbors)
