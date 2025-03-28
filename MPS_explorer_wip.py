@@ -2,7 +2,7 @@
 """
 Created on Tue Aug 24 16:03:00 2021
 
-@author: Lucia Lopez
+@author: Lucia
 
 GUI for MPS x,y,z data exploration and quick analysis
 
@@ -75,8 +75,7 @@ class MPS_explorer(QtWidgets.QMainWindow):
         self.ui.pushButton_remove_bad_cluster.clicked.connect(self.dist_cm_good_clus)
         self.ui.pushButton_savecluscenters.clicked.connect(self.save_clus_CM)
         self.ui.pushButton_Distances.clicked.connect(self.KNdist_hist)
-        self.ui.pushButton_saveAllClusterData.clicked.connect(lambda: self.save_all_clustered_data(1))
-        self.ui.pushButton_saveAllClusterDataThunderStorm.clicked.connect(lambda: self.save_all_clustered_data_thunderstorm(1))
+        self.ui.pushButton_saveAllClusterData.clicked.connect(lambda: self.save_dual_files(1))
         
         # Fine Tuning Parameters
         self.ui.lineEdit_latmin.textChanged.connect(self.latchange)
@@ -555,7 +554,6 @@ class MPS_explorer(QtWidgets.QMainWindow):
     #     np.savetxt(dataNamecsv, xyzROI, delimiter=",", fmt="%.2f", header="x, y, z", comments="")       
 
      
-
     def savexyzROI(self, channel):
         # Suggest a default filename
         filename = self.ui.lineEdit_filename.text()
@@ -601,6 +599,31 @@ class MPS_explorer(QtWidgets.QMainWindow):
         if filename:
             # Save with ThunderSTORM-compatible headers
             df.to_csv(filename, index=False, float_format='%.2f')
+    
+    # def savexyzROI(self, channel):
+        
+    #     # Suggest a default filename
+    #     filename = self.ui.lineEdit_filename.text()
+    #     filename = os.path.splitext(filename)[0]
+    #     default_filename = utils.insertSuffix(filename, f'_xyzROICh{channel}.csv')
+    #     # Open a file dialog to choose the location and name of the file
+    #     file_dialog = QFileDialog()
+    #     filename, _ = file_dialog.getSaveFileName(caption="Save ROI Data", directory=".", filter="CSV Files (*.csv)", initialFilter=default_filename)
+    
+    #     if filename:
+    #         if channel == 1:
+    #             xyzROI = np.array([self.xroi, self.yroi, self.zroi])
+    #         elif channel == 2:
+    #             xyzROI = np.array([self.xroi2, self.yroi2, self.zroi2])
+    #         else:
+    #             raise ValueError("Invalid channel number")
+            
+    #         xyzROI = np.transpose(xyzROI)
+    #         filename = os.path.splitext(filename)[0]
+    #         dataNamecsv = f'{filename}_xyzROICh{channel}.csv'
+            
+    #         # Export array to CSV file (using 2 decimal places)
+    #         np.savetxt(dataNamecsv, xyzROI, delimiter=",", fmt="%.2f", header="x, y, z", comments="")
             
             
     
@@ -619,164 +642,106 @@ class MPS_explorer(QtWidgets.QMainWindow):
         
         
     def cluster(self, channel):
-        """Perform DBSCAN clustering on the selected ROI data and visualize results.
         
-        Args:
-            channel (int): 1 for primary channel, 2 for secondary channel
-        """
-        # Initialize list for bad cluster indices
         self.indbc = []
         
-        # Channel-specific data setup
         if channel == 1:
-            # Channel 1 data and parameters
             x_roi = self.xroi
             y_roi = self.yroi
-            z_roi = self.zroi
-            brushch = self.brush1  # Channel 1 color
-            pench = self.pen1      # Channel 1 border color
-            scatter_layout_cluster = self.ui.scatterlayout_clusterch1  # Target UI layout
-            self.minsamples = float(self.ui.lineEdit_minsamples.text())  # Min samples parameter
-            self.eps = float(self.ui.lineEdit_eps.text())  # Epsilon parameter
+            brushch = self.brush1
+            pench = self.pen1
+            scatter_layout_cluster = self.ui.scatterlayout_clusterch1
+            self.minsamples = float(self.ui.lineEdit_minsamples.text())
+            self.eps = float(self.ui.lineEdit_eps.text())
         elif channel == 2:
-            # Channel 2 data and parameters
             x_roi = self.xroi2
             y_roi = self.yroi2
-            z_roi = self.zroi2
-            brushch = self.brush2  # Channel 2 color
-            pench = self.pen2      # Channel 2 border color
-            scatter_layout_cluster = self.ui.scatterlayout_clusterch2  # Target UI layout
-            self.minsamples = float(self.ui.lineEdit_minsamples_2.text())  # Min samples parameter
-            self.eps = float(self.ui.lineEdit_eps_2.text())  # Epsilon parameter
+            brushch = self.brush2
+            pench = self.pen2
+            scatter_layout_cluster = self.ui.scatterlayout_clusterch2
+            self.minsamples = float(self.ui.lineEdit_minsamples_2.text())
+            self.eps = float(self.ui.lineEdit_eps_2.text())
         else:
-            return  # Invalid channel
-    
-        # Prepare XY coordinate array
+            return  # Skip invalid channels
+        
+        # XY locs in ROI
         XY = np.column_stack((x_roi, y_roi))
         
-        # Perform DBSCAN clustering
-        db = DBSCAN(eps=self.eps, min_samples=int(self.minsamples)).fit(XY) 
-        dblabels = db.labels_  # Get cluster labels (-1 for noise)
+        # DBSCAN parameters
+        self.minsamples = float(self.ui.lineEdit_minsamples.text())
+        min_samples = int(self.minsamples)
         
-        # Store clustering results
-        self.cluster_labels = dblabels  # Array assigning each point to a cluster (or -1 for noise)
-        self.original_points = XY       # Store original coordinates for reference
-        self.original_z = z_roi         # Store original z-values
+        self.eps = float(self.ui.lineEdit_eps.text())
+        eps = int(self.eps)
         
-        # Calculate cluster centers (centroids)
+        # DBSCAN clustering
+        db = DBSCAN(eps=eps, min_samples=min_samples).fit(XY) 
+        dblabels = db.labels_        
+        
+        # Store labels for saving later
+        if channel == 1:
+            self.dblabels = dblabels
+        else:
+            self.dblabels2 = dblabels
+        
+        # Get unique cluster labels
         unique_labels = np.unique(dblabels)
+        
+        # Plot clusters
+        scatterWidgetcluster = pg.GraphicsLayoutWidget()
+        plotclusters = scatterWidgetcluster.addPlot(title="Clustered data")
+        plotclusters.setAspectLocked(True)
+        plotclusters.setLabels(bottom=('x [nm]'), left=('y [nm]'))
+        plotclusters.setXRange(np.min(x_roi), np.max(x_roi), padding=0)
+        
+        for label in unique_labels:
+            if label == -1:
+                # Skip noise points
+                continue
+            
+            # Get points belonging to the current cluster label
+            cluster_points = XY[dblabels == label]
+            
+            # Plot cluster points
+            cluster_plot = pg.ScatterPlotItem(cluster_points[:, 0], cluster_points[:, 1], 
+                                               pen=pench, brush=pg.mkBrush(None), size=10)
+            plotclusters.addItem(cluster_plot)
+        
+        # Plot cluster centers
         cm_list = []
         for label in unique_labels:
             if label == -1:
-                continue  # Skip noise points
+                continue
             cluster_points = XY[dblabels == label]
-            cm_list.append(np.mean(cluster_points, axis=0))  # Calculate centroid
+            cm_list.append(np.mean(cluster_points, axis=0))
         
-        # Store rounded cluster centers
-        self.cms = np.around(np.array(cm_list), decimals=2)
+        cms = np.array(cm_list)
+        self.cms = np.around(cms, decimals=2)
+
         
-        # Create cluster visualization
-        scatterWidgetcluster = pg.GraphicsLayoutWidget()
-        plotclusters = scatterWidgetcluster.addPlot(title="Clustered data")
-        plotclusters.setAspectLocked(True)  # Maintain aspect ratio
-        plotclusters.setLabels(bottom='x [nm]', left='y [nm]')
-        
-        # Plot points for each cluster
-        for label in unique_labels:
-            if label == -1:  # Noise points
-                noise_points = XY[dblabels == -1]
-                noise_plot = pg.ScatterPlotItem(
-                    noise_points[:, 0], noise_points[:, 1], 
-                    pen=pench, brush=None, size=2, symbol='x'  # Cross symbol for noise
-                )
-                plotclusters.addItem(noise_plot)
-            else:  # Cluster points
-                cluster_points = XY[dblabels == label]
-                cluster_plot = pg.ScatterPlotItem(
-                    cluster_points[:, 0], cluster_points[:, 1], 
-                    pen=pench, brush=None, size=10  # Hollow circles for cluster members
-                )
-                plotclusters.addItem(cluster_plot)
-        
-        # Plot cluster centers
-        self.selectedcluscm = pg.ScatterPlotItem(
-            self.cms[:, 0], self.cms[:, 1], 
-            size=10, pen=pg.mkPen('k'), brush=brushch  # Filled circles for centers
-        )
+        self.selectedcluscm = pg.ScatterPlotItem(self.cms[:, 0], self.cms[:, 1], size=10, pen=pg.mkPen('k'), brush=brushch)
         plotclusters.addItem(self.selectedcluscm)
+        self.gcms = []
+        self.selectedcluscm.sigClicked.connect(self.rx)
         
-        # Connect click event for center selection
-        self.selectedcluscm.sigClicked.connect(self.rx)  # rx handles center clicks
-        
-        # Update UI with new plot
+        # Add the plot to the UI
         self.empty_layout(scatter_layout_cluster)
         scatter_layout_cluster.addWidget(scatterWidgetcluster)
-        
-        
-    def rx(self, obj, points):
-        """Handle clicking on cluster centers to mark them as bad"""
-        try:
-            clicked_pos = np.array([points[0].pos().x(), points[0].pos().y()])
-            distances = np.linalg.norm(self.cms - clicked_pos, axis=1)
-            bad_cluster_idx = np.argmin(distances)  # Índice del CM más cercano
-            
-            if not hasattr(self, 'bad_cluster_indices'):
-                self.bad_cluster_indices = []
-            
-            # Toggle cluster status (add if not present, remove if present)
-            if bad_cluster_idx in self.bad_cluster_indices:
-                self.bad_cluster_indices.remove(bad_cluster_idx)
-            else:
-                self.bad_cluster_indices.append(bad_cluster_idx)
-            
-            # Update display
-            self.update_display_after_cluster_removal()
-            
-        except Exception as e:
-            QtWidgets.QMessageBox.critical(self, "Error", f"Error en rx: {str(e)}")
-        
-        
-    def update_display_after_cluster_removal(self):
-        """Update the display after cluster removal"""
-        try:
-            if not hasattr(self, 'bad_cluster_indices'):
-                return
-            
-            # Fiter good clusters
-            mask = ~np.isin(self.cluster_labels, self.bad_cluster_indices)
-            
-            # Update good clusters CM 
-            good_cm_indices = [i for i in range(len(self.cms)) 
-                              if i not in self.bad_cluster_indices]
-            self.gcms = self.cms[good_cm_indices] if good_cm_indices else np.array([])
-            
-            # Update display
-            scatterWidgetgoodclus = pg.GraphicsLayoutWidget()
-            plotgoodclus = scatterWidgetgoodclus.addPlot(title="Selected Clusters")
-            plotgoodclus.setAspectLocked(True)
-            
-            # Scatter plot good CMs
-            # good_points = self.original_points[mask]
-            # good_plot = pg.ScatterPlotItem(
-            #     good_points[:, 0], good_points[:, 1], 
-            #     pen=None, brush=self.brush3, size=5
-            # )
-            # plotgoodclus.addItem(good_plot)
-            
 
-            if len(self.gcms) > 0:
-                cm_plot = pg.ScatterPlotItem(
-                    self.gcms[:, 0], self.gcms[:, 1], 
-                    size=10, pen=pg.mkPen('k'), brush=self.brush3
-                )
-                plotgoodclus.addItem(cm_plot)
-            
-            self.empty_layout(self.ui.scatterlayout_goodclus)
-            self.ui.scatterlayout_goodclus.addWidget(scatterWidgetgoodclus)
-            
-        except Exception as e:
-            QtWidgets.QMessageBox.critical(self, "Error", f"Error al filtrar: {str(e)}")
+ 
+    def rx(self, obj, points):
+
+        # badclus = (points[0].pos())
+        badcluscoord = np.array((np.round(points[0].pos()[0], decimals = 2), np.round(points[0].pos()[1], decimals = 2)))
+
+        indbad_clus = np.where((self.cms[:,0] == badcluscoord[0]) & (self.cms[:,1] == badcluscoord[1]))
+
+        self.indbc.append(indbad_clus)
+        badind = np.unique(self.indbc)
         
+        self.good_cms = [elem for i, elem in enumerate(self.cms) if i not in badind]
+        self.gcms = np.array(self.good_cms)
+   
 
         
     
@@ -802,139 +767,175 @@ class MPS_explorer(QtWidgets.QMainWindow):
         self.ui.scatterlayout_goodclus.addWidget(scatterWidgetgoodclus)
         
     def save_clus_CM(self):
-        
-        clusCMxy = np.array([self.gcms[:,0],self.gcms[:,1]])
+        # First save cluster centers as before
+        clusCMxy = np.array([self.gcms[:,0], self.gcms[:,1]])
         clusCMxy = np.transpose(clusCMxy)
         
         filename = self.ui.lineEdit_filename.text()
         filename = os.path.splitext(filename)[0]
-        dataNamecsv = utils.insertSuffix(filename, '_clusCM_xy.csv')
         
-        #export array to CSV file (using 2 decimal places)
-        np.savetxt(dataNamecsv, clusCMxy, delimiter=",", fmt="%.2f", comments="")
+        # Save cluster centers
+        centers_df = pd.DataFrame({
+            'x_center [nm]': self.gcms[:,0],
+            'y_center [nm]': self.gcms[:,1]
+        })
         
-    def save_all_clustered_data(self, channel):
-        """Save all clustered data (including noise points with -1 labels) in standard format."""
-        try:
-            if not hasattr(self, 'cluster_labels'):
-                QtWidgets.QMessageBox.warning(self, "Error", "No clustering data available")
-                return
-    
-            # Get data for specified channel
-            if channel == 1:
-                x_data = self.xroi
-                y_data = self.yroi
-                z_data = self.zroi
-                labels = self.cluster_labels
-            elif channel == 2:
-                x_data = self.xroi2
-                y_data = self.yroi2
-                z_data = self.zroi2
-                labels = self.cluster_labels2
-            else:
-                QtWidgets.QMessageBox.warning(self, "Error", "Invalid channel selected")
-                return
-    
-            # Create mask to exclude bad clusters (but keep noise points)
-            if hasattr(self, 'bad_cluster_indices'):
-                mask = ~np.isin(labels, self.bad_cluster_indices)
-                x_data = x_data[mask]
-                y_data = y_data[mask]
-                z_data = z_data[mask]
-                labels = labels[mask]
-    
-            # Prepare data for saving - include all points with their cluster IDs
-            data = {
-                'x [nm]': x_data,
-                'y [nm]': y_data,
-                'z [nm]': z_data,
-                'cluster_id': labels  # Includes -1 for noise points
-            }
+        file_dialog = QFileDialog()
+        default_centers = utils.insertSuffix(filename, '_clusCM_xy.csv')
+        centers_filename, _ = file_dialog.getSaveFileName(
+            caption="Save Cluster Centers",
+            directory=".",
+            filter="CSV Files (*.csv)",
+            initialFilter=default_centers
+        )
+        
+        if centers_filename:
+            centers_df.to_csv(centers_filename, index=False, float_format='%.2f')
+        
+        # Optionally save additional cluster statistics
+        if hasattr(self, 'dblabels'):
+            # Calculate cluster sizes
+            unique_labels, counts = np.unique(self.dblabels[self.dblabels != -1], 
+                                           return_counts=True)
             
-            # Get save filename
-            default_suffix = f'_all_clusters_ch{channel}.csv'
-            filename, _ = QFileDialog.getSaveFileName(
-                self,
-                "Save All Cluster Data (including noise)",
-                utils.insertSuffix(self.ui.lineEdit_filename.text(), default_suffix),
-                "CSV Files (*.csv)"
-            )
-    
-            if filename:
-                pd.DataFrame(data).to_csv(filename, index=False, float_format='%.2f')
-                QtWidgets.QMessageBox.information(
-                    self, 
-                    "Success", 
-                    f"All clustered data (including noise) saved to {filename}"
-                )
-    
-        except Exception as e:
-            QtWidgets.QMessageBox.critical(
-                self, 
-                "Error", 
-                f"Failed to save data: {str(e)}"
-            )
-    
-    def save_all_clustered_data_thunderstorm(self, channel):
-        """Save filtered clustered data (excluding noise and bad clusters) in ThunderSTORM format."""
-        try:
-            if not hasattr(self, 'cluster_labels'):
-                QtWidgets.QMessageBox.warning(self, "Error", "No clustering data available")
-                return
-    
-            # Get data for specified channel
-            if channel == 1:
-                x_data = self.xroi
-                y_data = self.yroi
-                z_data = self.zroi
-                labels = self.cluster_labels
-            elif channel == 2:
-                x_data = self.xroi2
-                y_data = self.yroi2
-                z_data = self.zroi2
-                labels = self.cluster_labels2
-            else:
-                QtWidgets.QMessageBox.warning(self, "Error", "Invalid channel selected")
-                return
-    
-            # Create mask to exclude noise (-1) and bad clusters
-            noise_mask = (labels != -1)  # Exclude noise points
-            if hasattr(self, 'bad_cluster_indices'):
-                bad_cluster_mask = ~np.isin(labels, self.bad_cluster_indices)
-                mask = noise_mask & bad_cluster_mask
-            else:
-                mask = noise_mask
-    
-            # Prepare ThunderSTORM compatible data (without cluster IDs)
-            data = {
-                'x [nm]': x_data[mask],
-                'y [nm]': y_data[mask],
-                'z [nm]': z_data[mask]
-            }
+            stats_df = pd.DataFrame({
+                'cluster_id': unique_labels,
+                'size': counts,
+                'x_center': [self.gcms[i,0] for i in range(len(unique_labels))],
+                'y_center': [self.gcms[i,1] for i in range(len(unique_labels))]
+            })
             
-            # Get save filename
-            default_suffix = f'_filtered_clusters_ThunderSTORM_ch{channel}.csv'
-            filename, _ = QFileDialog.getSaveFileName(
-                self,
-                "Save Filtered Cluster Data (ThunderSTORM)",
-                utils.insertSuffix(self.ui.lineEdit_filename.text(), default_suffix),
-                "CSV Files (*.csv)"
+            default_stats = utils.insertSuffix(filename, '_cluster_stats.csv')
+            stats_filename, _ = file_dialog.getSaveFileName(
+                caption="Save Cluster Statistics",
+                directory=".",
+                filter="CSV Files (*.csv)",
+                initialFilter=default_stats
             )
+            
+            if stats_filename:
+                stats_df.to_csv(stats_filename, index=False, float_format='%.2f')
+            
+    def save_all_cluster_data(self, channel):
+        if channel == 1:
+            x_roi = self.xroi
+            y_roi = self.yroi
+            z_roi = self.zroi
+            labels = self.dblabels if hasattr(self, 'dblabels') else None
+        elif channel == 2:
+            x_roi = self.xroi2
+            y_roi = self.yroi2
+            z_roi = self.zroi2
+            labels = self.dblabels2 if hasattr(self, 'dblabels2') else None
+        else:
+            raise ValueError("Invalid channel number")
     
-            if filename:
-                pd.DataFrame(data).to_csv(filename, index=False, float_format='%.2f')
-                QtWidgets.QMessageBox.information(
-                    self, 
-                    "Success", 
-                    f"Filtered clustered data saved in ThunderSTORM format to {filename}"
-                )
+        if labels is None:
+            print("No cluster data available. Run clustering first.")
+            return
     
-        except Exception as e:
-            QtWidgets.QMessageBox.critical(
-                self, 
-                "Error", 
-                f"Failed to save data: {str(e)}"
+        # Create ThunderSTORM-compatible DataFrame
+        df = pd.DataFrame({
+            'x [nm]': x_roi,
+            'y [nm]': y_roi,
+            'z [nm]': z_roi,
+            'frame': np.zeros(len(x_roi)),  # Required by ThunderSTORM
+            'cluster_id': labels,
+            'is_noise': (labels == -1).astype(int)  # 1/0 instead of True/False
+        })
+    
+        # Add centers if available
+        if hasattr(self, 'cms'):
+            centers = np.full((len(labels), 2), np.nan)  # Initialize with NaNs
+            valid_labels = labels[labels != -1]
+            if len(valid_labels) > 0:
+                unique_labels = np.unique(valid_labels)
+                for i, label in enumerate(unique_labels):
+                    if i < len(self.cms):  # Ensure we don't exceed available centers
+                        centers[labels == label] = self.cms[i]
+            df['x_center [nm]'] = centers[:, 0]
+            df['y_center [nm]'] = centers[:, 1]
+    
+        # Ensure ThunderSTORM-required columns come first
+        thunderstorm_cols = ['x [nm]', 'y [nm]', 'z [nm]', 'frame']
+        other_cols = [c for c in df.columns if c not in thunderstorm_cols]
+        df = df[thunderstorm_cols + other_cols]
+    
+        # Save with ThunderSTORM-compatible settings
+        filename = QFileDialog.getSaveFileName(
+            self,
+            "Save all cluster data",
+            os.path.splitext(self.ui.lineEdit_filename.text())[0] + f"_ch{channel}_all_cluster_data.csv",
+            "CSV Files (*.csv)"
+        )[0]
+    
+        if filename:
+            df.to_csv(
+                filename,
+                index=False,
+                sep=',',  # Explicit comma separator
+                float_format='%.2f',  # 2 decimal places
+                encoding='utf-8'
             )
+            print(f"Saved all cluster data file: {filename}") 
+    
+    def save_thunderstorm_minimal(self, channel):
+        """Saves a minimal x,y,z-only CSV compatible with ThunderSTORM"""
+        # Get data for selected channel
+        if channel == 1:
+            x, y, z = self.xroi, self.yroi, self.zroi
+        elif channel == 2:
+            x, y, z = self.xroi2, self.yroi2, self.zroi2
+        else:
+            raise ValueError("Invalid channel")
+    
+        # Create minimal DataFrame with ThunderSTORM-required columns
+        ts_df = pd.DataFrame({
+            'id': np.arange(len(x)),  # Required by ThunderSTORM
+            'frame': np.zeros(len(x)),  # Required by ThunderSTORM
+            'x [nm]': x,
+            'y [nm]': y,
+            'z [nm]': z,
+            'sigma [nm]': np.full(len(x), 20.0),  # Dummy values required by ThunderSTORM
+            'intensity [photon]': np.full(len(x), 1000.0),
+            'offset [photon]': np.zeros(len(x)),
+            'bkgstd [photon]': np.full(len(x), 10.0),
+            'uncertainty [nm]': np.full(len(x), 5.0)
+        })
+    
+        # Get save path
+        base_name = os.path.splitext(self.ui.lineEdit_filename.text())[0]
+        ch_suffix = f"_ch{channel}" if channel else ""
+        default_name = f"{base_name}{ch_suffix}_thunderstorm_minimal.csv"
+        
+        # Get save path from user
+        filename, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save Minimal ThunderSTORM CSV",
+            default_name,
+            "CSV Files (*.csv)"
+        )
+        
+
+        
+        if filename:
+            # Save with ThunderSTORM-required format
+            ts_df.to_csv(
+                filename,
+                index=False,
+                sep=',',
+                float_format='%.1f',  # ThunderSTORM typically uses 1 decimal
+                encoding='utf-8'  # Windows line endings
+            )
+            print(f"Saved minimal ThunderSTORM file: {filename}")
+     
+    def save_dual_files(self, channel):
+        """Saves both full cluster data and minimal ThunderSTORM files"""
+        # First save the full cluster data
+        self.save_all_cluster_data(channel)
+        
+        # Then save the minimal version
+        self.save_thunderstorm_minimal(channel)
     
     def latchange(self):
         

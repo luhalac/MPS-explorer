@@ -563,7 +563,7 @@
      <property name="geometry">
       <rect>
        <x>230</x>
-       <y>370</y>
+       <y>380</y>
        <width>101</width>
        <height>31</height>
       </rect>
@@ -576,7 +576,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>450</y>
+       <y>440</y>
        <width>331</width>
        <height>241</height>
       </rect>
@@ -600,7 +600,7 @@
      <property name="geometry">
       <rect>
        <x>100</x>
-       <y>370</y>
+       <y>380</y>
        <width>121</width>
        <height>31</height>
       </rect>
@@ -707,32 +707,6 @@
      </property>
      <property name="clearButtonEnabled">
       <bool>false</bool>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="pushButton_saveAllClusterData">
-     <property name="geometry">
-      <rect>
-       <x>100</x>
-       <y>410</y>
-       <width>121</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>save all cluster data</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="pushButton_saveAllClusterDataThunderStorm">
-     <property name="geometry">
-      <rect>
-       <x>230</x>
-       <y>410</y>
-       <width>121</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>save all cluster data T</string>
      </property>
     </widget>
    </widget>

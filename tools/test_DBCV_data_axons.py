@@ -84,14 +84,16 @@ X = np.column_stack((xdata,ydata))
 X = X.astype(np.double)
 
 # select params range to explore
-eps_range = np.arange(20,40,5)
-min_samples_range = np.arange(10,20,5)
+eps_range = np.arange(10,40,5)
+min_samples_range = np.arange(15,20,1)
 
 
 [best_per_cluster_validity_index,best_ind, best_param, best_labels] = DBCV_DBSCAN(X, eps_range, min_samples_range)
 
 best_eps = np.round(best_param['eps'], decimals = 2)
 best_min_samples = np.round(best_param['min_samples'], decimals = 2)
+
+
 
 
 # Generate scatter plot 
