@@ -162,6 +162,14 @@ class MPS_explorer(QtWidgets.QMainWindow):
         return xdata, ydata, zdata
 
 
+    def get_root_filename(self):
+        """Returns the base filename without extension from the main filename field"""
+        filename = self.ui.lineEdit_filename.text()
+        if filename:
+            return os.path.splitext(os.path.basename(filename))[0]
+        return "data"  # Default if no filename is set    
+
+
     def scatterplot(self):  
         
         # Scatter plot data Ch1
@@ -535,31 +543,13 @@ class MPS_explorer(QtWidgets.QMainWindow):
                 
         self.empty_layout(self.ui.zhistlayout_2)
         self.ui.zhistlayout_2.addWidget(histzWidget2)
-        
-    # def savexyzROI(self, channel):
-        
-    #     if channel == 1:
-    #         xyzROI = np.array([self.xroi, self.yroi, self.zroi])
-    #         filename = self.ui.lineEdit_filename.text()
-    #     elif channel == 2:
-    #         xyzROI = np.array([self.xroi2, self.yroi2, self.zroi2])
-    #         filename = self.ui.lineEdit_filename_2.text()
-    #     else:
-    #         raise ValueError("Invalid channel number")
-        
-    #     xyzROI = np.transpose(xyzROI)
-    #     filename = os.path.splitext(filename)[0]
-    #     dataNamecsv = utils.insertSuffix(filename, f'_xyzROICh{channel}.csv')
-        
-    #     # Export array to CSV file (using 2 decimal places)
-    #     np.savetxt(dataNamecsv, xyzROI, delimiter=",", fmt="%.2f", header="x, y, z", comments="")       
+          
 
      
 
     def savexyzROI(self, channel):
-        # Suggest a default filename
-        filename = self.ui.lineEdit_filename.text()
-        filename = os.path.splitext(filename)[0]
+        # Get root filename
+        root_name = self.get_root_filename()
         
         # Get the data based on channel
         if channel == 1:
@@ -567,11 +557,13 @@ class MPS_explorer(QtWidgets.QMainWindow):
             y_roi = self.yroi
             z_roi = self.zroi
             labels = self.dblabels if hasattr(self, 'dblabels') else None
+            suffix = f"_ch{channel}_roi"
         elif channel == 2:
             x_roi = self.xroi2
             y_roi = self.yroi2
             z_roi = self.zroi2
             labels = self.dblabels2 if hasattr(self, 'dblabels2') else None
+            suffix = f"_ch{channel}_roi"
         else:
             raise ValueError("Invalid channel number")
     
@@ -588,34 +580,37 @@ class MPS_explorer(QtWidgets.QMainWindow):
         
         df = pd.DataFrame(data)
         
-        # Open file dialog to choose save location
+        # Open file dialog with suggested filename
         file_dialog = QFileDialog()
-        default_filename = utils.insertSuffix(filename, f'_xyzROICh{channel}_with_clusters.csv')
+        default_filename = f"{root_name}{suffix}.csv"
         filename, _ = file_dialog.getSaveFileName(
             caption="Save ROI Data with Clusters",
-            directory=".",
-            filter="CSV Files (*.csv)",
-            initialFilter=default_filename
+            directory=default_filename,  # Suggest the default filename
+            filter="CSV Files (*.csv)"
         )
         
         if filename:
-            # Save with ThunderSTORM-compatible headers
             df.to_csv(filename, index=False, float_format='%.2f')
             
             
     
     def savedistdata(self):
-        
         Nneighbor = int(self.Nneighbor)
-
         dist = self.distances
         
-        filename = self.ui.lineEdit_filename.text()
-        filename = os.path.splitext(filename)[0]
-        dataNamecsv = utils.insertSuffix(filename, '_' + str(Nneighbor) + 'neighbor_distdata.csv')
+        # Get root filename
+        root_name = self.get_root_filename()
+        default_filename = f"{root_name}_{Nneighbor}neighbor_distances.csv"
         
-        #export dist array to CSV file (using 2 decimal places)
-        np.savetxt(dataNamecsv, dist, delimiter=",", fmt="%.2f")
+        filename, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save Distance Data",
+            default_filename,
+            "CSV Files (*.csv)"
+        )
+        
+        if filename:
+            np.savetxt(filename, dist, delimiter=",", fmt="%.2f")
         
         
     def cluster(self, channel):
@@ -801,25 +796,38 @@ class MPS_explorer(QtWidgets.QMainWindow):
         self.empty_layout(self.ui.scatterlayout_goodclus)
         self.ui.scatterlayout_goodclus.addWidget(scatterWidgetgoodclus)
         
-    def save_clus_CM(self):
+
         
+    def save_clus_CM(self):
         clusCMxy = np.array([self.gcms[:,0],self.gcms[:,1]])
         clusCMxy = np.transpose(clusCMxy)
         
-        filename = self.ui.lineEdit_filename.text()
-        filename = os.path.splitext(filename)[0]
-        dataNamecsv = utils.insertSuffix(filename, '_clusCM_xy.csv')
+        # Get root filename
+        root_name = self.get_root_filename()
+        default_filename = f"{root_name}_cluster_centers.csv"
         
-        #export array to CSV file (using 2 decimal places)
-        np.savetxt(dataNamecsv, clusCMxy, delimiter=",", fmt="%.2f", comments="")
+        filename, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save Cluster Centers",
+            default_filename,
+            "CSV Files (*.csv)"
+        )
+        
+        if filename:
+            np.savetxt(filename, clusCMxy, delimiter=",", fmt="%.2f", comments="")
+    
+    
+    
         
     def save_all_clustered_data(self, channel):
-        """Save all clustered data (including noise points with -1 labels) in standard format."""
         try:
             if not hasattr(self, 'cluster_labels'):
                 QtWidgets.QMessageBox.warning(self, "Error", "No clustering data available")
                 return
     
+            # Get root filename
+            root_name = self.get_root_filename()
+            
             # Get data for specified channel
             if channel == 1:
                 x_data = self.xroi
@@ -843,20 +851,21 @@ class MPS_explorer(QtWidgets.QMainWindow):
                 z_data = z_data[mask]
                 labels = labels[mask]
     
-            # Prepare data for saving - include all points with their cluster IDs
+            # Prepare data for saving
             data = {
                 'x [nm]': x_data,
                 'y [nm]': y_data,
                 'z [nm]': z_data,
-                'cluster_id': labels  # Includes -1 for noise points
+                'cluster_id': labels
             }
             
-            # Get save filename
-            default_suffix = f'_all_clusters_ch{channel}.csv'
+            # Set default filename
+            default_filename = f"{root_name}_ch{channel}_all_clusters.csv"
+            
             filename, _ = QFileDialog.getSaveFileName(
                 self,
                 "Save All Cluster Data (including noise)",
-                utils.insertSuffix(self.ui.lineEdit_filename.text(), default_suffix),
+                default_filename,
                 "CSV Files (*.csv)"
             )
     
@@ -882,17 +891,22 @@ class MPS_explorer(QtWidgets.QMainWindow):
                 QtWidgets.QMessageBox.warning(self, "Error", "No clustering data available")
                 return
     
+            # Get root filename
+            root_name = self.get_root_filename()
+            
             # Get data for specified channel
             if channel == 1:
                 x_data = self.xroi
                 y_data = self.yroi
                 z_data = self.zroi
                 labels = self.cluster_labels
+                suffix = f"_ch{channel}_filtered_clusters_thunderstorm"
             elif channel == 2:
                 x_data = self.xroi2
                 y_data = self.yroi2
                 z_data = self.zroi2
                 labels = self.cluster_labels2
+                suffix = f"_ch{channel}_filtered_clusters_thunderstorm"
             else:
                 QtWidgets.QMessageBox.warning(self, "Error", "Invalid channel selected")
                 return
@@ -912,12 +926,14 @@ class MPS_explorer(QtWidgets.QMainWindow):
                 'z [nm]': z_data[mask]
             }
             
-            # Get save filename
-            default_suffix = f'_filtered_clusters_ThunderSTORM_ch{channel}.csv'
+            # Set default filename
+            default_filename = f"{root_name}{suffix}.csv"
+            
+            # Open file dialog with suggested filename
             filename, _ = QFileDialog.getSaveFileName(
                 self,
                 "Save Filtered Cluster Data (ThunderSTORM)",
-                utils.insertSuffix(self.ui.lineEdit_filename.text(), default_suffix),
+                default_filename,
                 "CSV Files (*.csv)"
             )
     
